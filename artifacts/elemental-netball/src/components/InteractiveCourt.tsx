@@ -23,6 +23,13 @@ const BIB_W = 28;
 const BIB_H = 34;
 const BALL_SIZE = 26;
 
+// Shooting circle radius as a fraction of court height.
+// Derived from zone SVG geometry: ~109.5px radius on a 701.76px court.
+const CIRCLE_R_NORM = 0.156;
+
+// Positions barred from both shooting circles.
+const CIRCLE_EXCLUDED = new Set(["WA", "WD", "C"]);
+
 // ── Zone rects in normalised [0,1] court space (y=0 = top) ─────────────────
 // Fire attacks toward the TOP of the court (y → 0).
 type ZoneRect = { x: [number, number]; y: [number, number] };
@@ -92,9 +99,36 @@ const PlayerToken: React.FC<TokenProps> = ({
   const clamp = useCallback(() => {
     const rx = BIB_W / 2;
     const ry = BIB_H / 2;
-    x.set(Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, x.get())));
-    y.set(Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, y.get())));
-  }, [zone, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
+    let px = x.get();
+    let py = y.get();
+
+    // ── Shooting circle exclusion (WA, WD, C only) ──────────────────────
+    if (CIRCLE_EXCLUDED.has(code)) {
+      const circleR = CIRCLE_R_NORM * courtH;
+      // Circle centres sit on the goal lines at the top and bottom edges.
+      const circles: [number, number][] = [
+        [0.5 * courtW, 0],        // top (attacking end)
+        [0.5 * courtW, courtH],   // bottom (defending end)
+      ];
+      for (const [cx, cy] of circles) {
+        const dx = px - cx;
+        const dy = py - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < circleR) {
+          // Push token radially to the circle boundary.
+          const scale = dist > 0.001 ? circleR / dist : 1;
+          px = cx + dx * scale;
+          py = cy + dy * scale;
+          // If at the exact centre (dist ≈ 0), nudge toward court middle.
+          if (dist <= 0.001) py = cy < courtH / 2 ? cy + circleR : cy - circleR;
+        }
+      }
+    }
+
+    // ── Rectangular zone clamping ────────────────────────────────────────
+    x.set(Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, px)));
+    y.set(Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, py)));
+  }, [code, zone, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (courtW === 0) return null;
 
