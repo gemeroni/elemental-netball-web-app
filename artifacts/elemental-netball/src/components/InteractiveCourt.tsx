@@ -12,11 +12,6 @@ function stripSvgMeta(raw: string) {
 
 const FILL_SVG_BASE = stripSvgMeta(netballFillRaw);
 
-// Tint the ball SVG by replacing the grey fill with the given colour.
-function tintBallSvg(color: string): string {
-  return FILL_SVG_BASE.replace(/#e6e7e8/gi, color);
-}
-
 // ── Token dimensions ──────────────────────────────────────────────────────────
 const BIB_W    = 32;
 const BIB_H    = 40;
@@ -212,8 +207,6 @@ const BallToken: React.FC<{
 
   if (courtW === 0) return null;
 
-  const tintedSvg = tintBallSvg(color);
-
   return (
     <motion.div
       data-bib="true"
@@ -231,23 +224,24 @@ const BallToken: React.FC<{
         touchAction: "none",
         zIndex: 20,
         cursor: "grab",
-        filter: `drop-shadow(0 0 6px ${color}bb) drop-shadow(0 2px 4px rgba(0,0,0,0.6))`,
+        filter: `drop-shadow(0 0 5px ${color}) drop-shadow(0 0 12px ${color}aa) drop-shadow(0 2px 3px rgba(0,0,0,0.7))`,
+        transition: "filter 100ms linear",
       }}
     >
-      {/* Tinted netball fill — seam panels in the heat colour */}
+      {/* White netball SVG */}
       <div
         style={{ position: "absolute", inset: 0 }}
         className="[&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-        dangerouslySetInnerHTML={{ __html: tintedSvg }}
+        dangerouslySetInnerHTML={{ __html: FILL_SVG_BASE }}
       />
-      {/* Specular highlight — soft white shimmer top-left for 3-D pop */}
+      {/* Specular highlight — soft shimmer top-left for 3-D pop */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle at 35% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 35%, transparent 60%)",
+            "radial-gradient(circle at 35% 28%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.12) 38%, transparent 62%)",
           pointerEvents: "none",
         }}
       />
