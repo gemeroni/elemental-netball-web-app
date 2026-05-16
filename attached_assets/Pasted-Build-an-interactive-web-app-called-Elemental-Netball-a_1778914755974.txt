@@ -1,0 +1,76 @@
+Build an interactive web app called Elemental Netball - a visual learning tool for kids (ages 8-12) learning netball for the first time.
+
+Tech stack: React + Vite. No backend, no router library - single page with section state managed in React. Mobile-first layout throughout. Target screen: 375px wide phone, scales up to tablet.
+
+Assets - PENDING UPLOAD
+
+All SVG and PNG assets will be uploaded to this project before development begins. Do not attempt to generate or substitute placeholder art for the bib icons, court diagrams, or zone diagrams - these are pre-built and will be supplied. Once uploaded they will be in /assets/svg/ and /assets/png/. Use SVG versions wherever possible. Render bib SVGs inline (not via <img src>) so CSS can target them.
+
+Key filenames to expect:
+
+Bibs: [Colour]_[PositionCode]_[Team].svg e.g. Red_GS_Fire.svg, Purple_GS_Ice.svg
+Court: Spectrum_Court.svg
+Zone diagrams: [Colour]_Zone.svg e.g. Red_Zone.svg
+Build all components so they reference these paths and will display correctly once assets are present. Use a clearly labelled placeholder (coloured box with filename text) only as a temporary stand-in where an asset is expected.
+
+Concept
+
+Two rival teams - Fire Team (bold, warm, filled bibs) and Ice Team (cool, outlined bibs) - teach netball through a hub-based interactive experience. The visual assets are the hero: SVG bib icons, court diagrams, and zone diagrams are all pre-built and supplied.
+
+Design system
+
+Seven positions, each with a dedicated colour. This colour is used everywhere that position appears.
+
+Position	Code	Fire Team	Fire Hex	Ice Team	Ice Hex
+Goal Shooter	GS	Red (filled)	#cc3333	Purple (outlined)	#663399
+Goal Attack	GA	Orange (filled)	#ef6d22	Blue (outlined)	#0052b3
+Wing Attack	WA	Yellow (filled)	#ffaa00	Teal (outlined)	#009999
+Centre	C	Green (filled)	#009933	Green (outlined)	#009933
+Wing Defence	WD	Teal (filled)	#009999	Yellow (outlined)	#ffaa00
+Goal Defence	GD	Blue (filled)	#0052b3	Orange (outlined)	#ef6d22
+Goal Keeper	GK	Purple (filled)	#663399	Red (outlined)	#cc3333
+Matchup pairs share a row - same hex, flipped treatment. Centre is the only position where both teams share the same colour.
+
+Fire Team bib = solid coloured background, white text, thin #b3b3b3 grey outer stroke.
+Ice Team bib = white background, thick coloured border, coloured text.
+
+Background: near-black #1a1a1a. Text: #ffffff. Body font: Work Sans (Google Fonts). Brand feel: bold, clean, sporty - not childishly cartoonish.
+
+App structure: Hub with 4 sections
+
+Home screen shows 4 large tappable tiles in a 2x2 grid, each launching a section. Sections render in-place with a back button to return to the hub. No page navigation or URL routing needed.
+
+Section 1 - The Court
+Display a top-down netball court diagram using Spectrum_Court.svg. Overlay tappable zones for: Goal Third (top), Centre Third (middle), Goal Third (bottom), and the two Shooting Circles. Tap a zone to highlight it and show a short description below the court (e.g. "Centre Third - all 7 players can enter this zone"). One zone active at a time.
+
+Section 2 - Positions
+Show all 7 Fire Team bib icons arranged in their approximate court position (GS and GA at top, WA above centre, C at centre, WD below centre, GD and GK at bottom). Tap a bib to expand a card showing: position full name, one-sentence role, which zones they can enter, and their Ice Team matchup opponent (show both bibs side by side). Tap again or tap elsewhere to collapse.
+
+Position data:
+
+GS: Goal Shooter - Scores goals from inside the shooting circle. Zones: Goal Third + Shooting Circle (attacking end). Opponent: GK.
+GA: Goal Attack - Feeds the shooter and helps score goals. Zones: Goal Third + Centre Third + Shooting Circle (attacking end). Opponent: GD.
+WA: Wing Attack - Sets up shots by feeding the ball into the circle. Zones: Centre Third + Goal Third (attacking, no circle). Opponent: WD.
+C: Centre - Links attack and defence. Zones: all thirds, no shooting circles. Opponent: C.
+WD: Wing Defence - Stops the Wing Attack from feeding the ball in. Zones: Centre Third + Goal Third (defensive, no circle). Opponent: WA.
+GD: Goal Defence - Marks the Goal Attack and blocks shots. Zones: Goal Third + Centre Third + Shooting Circle (defensive end). Opponent: GA.
+GK: Goal Keeper - Defends the goal post and intercepts shots. Zones: Goal Third + Shooting Circle (defensive end). Opponent: GS.
+Section 3 - The Rules
+A swipeable stack of scenario cards (5 cards for V1). Each card shows a situation in plain language, 2-3 answer buttons, and on tap reveals whether the answer is correct with a one-sentence explanation. Progress dots at the bottom show card position. Topics:
+
+Footwork: a player catches the ball and takes 3 steps - what happens? (Turnover to the other team)
+Held ball: a player holds the ball for 5 seconds - what happens? (Turnover to the other team)
+Obstruction: a defender stands 50cm from the ball carrier - what happens? (Foul called - must stand 90cm away)
+Offside: the Goal Keeper runs into the Centre Third - what happens? (Offside called - turnover)
+Contact: a defender bumps into the shooter - what happens? (Penalty pass to the attacking team)
+Section 4 - Pick Your Side
+Step 1: Player taps Fire Team or Ice Team. Show both teams' full 7-bib lineup and let them choose.
+Step 2: Show a simplified court with 7 empty labelled position slots. Show the 7 chosen team bibs in a tray below the court. Drag a bib from the tray onto the correct court slot. Correct placement locks the bib in with a brief colour pulse animation. Wrong placement returns the bib to the tray with a gentle horizontal shake. Complete all 7 to show a "Full squad out!" completion message with all bibs glowing.
+
+V1 hard limits - do not build:
+
+No login, accounts, or saved progress
+No audio
+No backend or API calls
+No score tracking or badges
+No multiplayer
