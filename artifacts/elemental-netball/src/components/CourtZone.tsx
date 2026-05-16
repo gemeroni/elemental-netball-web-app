@@ -120,7 +120,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
                 transition={{ duration: 0.22 }}
                 style={{
                   filter: `drop-shadow(0 0 14px ${glow}) drop-shadow(0 0 30px ${hex}35)`,
-                  transform: team === "Ice" ? "scaleY(-1)" : undefined,
+                  scaleY: team === "Ice" ? -1 : 1,
                 }}
                 dangerouslySetInnerHTML={{ __html: zoneSvg }}
               />
