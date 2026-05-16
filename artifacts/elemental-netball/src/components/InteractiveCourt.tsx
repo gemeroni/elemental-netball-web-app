@@ -359,8 +359,10 @@ export const InteractiveCourt: React.FC = () => {
       </div>
 
       {/* ── Court + Thermometer ── */}
+      {/* Width-driven layout: court width is fixed, height follows aspect ratio,   */}
+      {/* capped by maxHeight so it never overflows on short viewports.             */}
       <div className="flex-1 flex items-center justify-center px-2 overflow-hidden py-1">
-        <div className="flex items-stretch gap-2 max-h-full" style={{ height: "100%" }}>
+        <div className="flex items-end gap-2">
 
           {/* ── Court ── */}
           <div
@@ -368,8 +370,8 @@ export const InteractiveCourt: React.FC = () => {
             className="relative overflow-hidden flex-shrink-0"
             style={{
               aspectRatio: "356 / 709",
-              height: "100%",
-              maxWidth: "calc(100vw - 56px)",
+              width: "min(295px, calc(100vw - 64px))",
+              maxHeight: "calc(100dvh - 196px)",
               background: "#0b0b10",
               boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
               borderRadius: 4,

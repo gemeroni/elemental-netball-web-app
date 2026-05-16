@@ -54,7 +54,7 @@ export const ElementalNetball: React.FC = () => {
               >
                 <button
                   onClick={() => setActiveTeam("Fire")}
-                  className={`px-3 py-2 text-xs font-black uppercase tracking-wider transition-all duration-200 ${
+                  className={`px-4 py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
                     isFire
                       ? "bg-[#E53935] text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
@@ -65,7 +65,7 @@ export const ElementalNetball: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setActiveTeam("Ice")}
-                  className={`px-3 py-2 text-xs font-black uppercase tracking-wider transition-all duration-200 ${
+                  className={`px-4 py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
                     !isFire
                       ? "bg-[#1E88E5] text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"

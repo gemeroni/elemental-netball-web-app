@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ZONE_SVGS, courtLinesRaw } from "@/assets/zoneSvgs";
+import { ZONE_SVGS, ICE_ZONE_SVGS, courtLinesRaw } from "@/assets/zoneSvgs";
 
 import redThermRaw    from "@/assets/svg/Red_Thermometer.svg?raw";
 import orangeThermRaw from "@/assets/svg/Orange_Thermometer.svg?raw";
@@ -54,7 +54,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
   accentHex,
   team,
 }) => {
-  const zoneSvg = ZONE_SVGS[posCode] ?? "";
+  const zoneSvg = (team === "Ice" ? ICE_ZONE_SVGS : ZONE_SVGS)[posCode] ?? "";
 
   // Hex → rgba helper for inline styles
   const hex = accentHex;

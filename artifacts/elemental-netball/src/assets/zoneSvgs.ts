@@ -57,7 +57,7 @@ function process(raw: string, prefix: string): string {
   return text;
 }
 
-// Key: position code
+// Fire team: position code → SVG colour matches fireHex
 export const ZONE_SVGS: Record<string, string> = {
   GS: process(rawRed,    "z-gs"),
   GA: process(rawOrange, "z-ga"),
@@ -66,4 +66,17 @@ export const ZONE_SVGS: Record<string, string> = {
   WD: process(rawTeal,   "z-wd"),
   GD: process(rawBlue,   "z-gd"),
   GK: process(rawPurple, "z-gk"),
+};
+
+// Ice team: position code → SVG colour matches iceHex (reversed palette)
+// Ice GS=#663399 purple, GA=#0052b3 blue, WA=#009999 teal,
+// C=#009933 green, WD=#ffaa00 yellow, GD=#ef6d22 orange, GK=#cc3333 red
+export const ICE_ZONE_SVGS: Record<string, string> = {
+  GS: process(rawPurple, "iz-gs"),
+  GA: process(rawBlue,   "iz-ga"),
+  WA: process(rawTeal,   "iz-wa"),
+  C:  process(rawGreen,  "iz-c"),
+  WD: process(rawYellow, "iz-wd"),
+  GD: process(rawOrange, "iz-gd"),
+  GK: process(rawRed,    "iz-gk"),
 };
