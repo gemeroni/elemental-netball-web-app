@@ -20,9 +20,9 @@ function inlineSvg(raw: string) {
 const OUTLINE_SVG = stripSvgMeta(netballOutlineRaw).replace(/<style[\s\S]*?<\/style>/gi, "");
 
 // ── Token dimensions ──────────────────────────────────────────────────────────
-const BIB_W    = 28;
-const BIB_H    = 34;
-const BALL_SZ  = 26;
+const BIB_W    = 44;
+const BIB_H    = 54;
+const BALL_SZ  = 38;
 
 // Shooting circle radius as fraction of court height (derived from SVG geometry).
 const CIRCLE_R_NORM = 0.156;
