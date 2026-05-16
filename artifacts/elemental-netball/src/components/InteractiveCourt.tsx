@@ -5,7 +5,6 @@ import { POSITIONS } from "@/data/positions";
 import type { Team } from "@/data/positions";
 import { BibSvg } from "./BibSvg";
 import netballOutlineRaw from "@/assets/svg/Netball_Outline.svg?raw";
-import thermRangeRaw from "@/assets/svg/EN_Thermometer_Range.svg?raw";
 
 // ── SVG helpers ───────────────────────────────────────────────────────────────
 function stripSvgMeta(raw: string) {
@@ -19,14 +18,8 @@ function inlineSvg(raw: string) {
     .replace(/\s+class="[^"]*"/g, "");
 }
 
-const COURT_SVG      = stripSvgMeta(courtLinesRaw);
-const OUTLINE_SVG    = stripSvgMeta(netballOutlineRaw).replace(/<style[\s\S]*?<\/style>/gi, "");
-const THERM_RANGE_SVG = inlineSvg(thermRangeRaw);
-
-// Thermometer fill area bounds (% of total SVG height).
-// Derived from linearGradient y1=621.1 (bottom/cold) y2=87.8 (top/hot).
-const THERM_TOP_PCT   = (87.8  / 685.26) * 100; // ≈ 12.8 %
-const THERM_RANGE_PCT = ((621.1 - 87.8) / 685.26) * 100; // ≈ 77.8 %
+const COURT_SVG   = stripSvgMeta(courtLinesRaw);
+const OUTLINE_SVG = stripSvgMeta(netballOutlineRaw).replace(/<style[\s\S]*?<\/style>/gi, "");
 
 // ── Token dimensions ──────────────────────────────────────────────────────────
 const BIB_W    = 28;
@@ -60,26 +53,25 @@ const ICE_ZONES: Record<string, ZoneRect> = Object.fromEntries(
 );
 
 // ── Centre-pass starting positions ───────────────────────────────────────────
-// Fire C has the ball at the centre circle.
-// Ice C waits just outside the circle (can't be in it during opponent's pass).
+// Fire C has the ball at the centre circle; pairs show attacker + marker side by side.
 const FIRE_INIT: Record<string, [number, number]> = {
-  GS: [0.35, 0.17],
-  GA: [0.65, 0.30],
-  WA: [0.25, 0.42],
-  C:  [0.50, 0.50],
-  WD: [0.72, 0.60],
-  GD: [0.40, 0.73],
-  GK: [0.28, 0.85],
+  GS: [0.38, 0.17],  // Fire goal third — left
+  GA: [0.20, 0.37],  // left at upper transverse line
+  WA: [0.72, 0.34],  // right at upper transverse line
+  C:  [0.42, 0.50],  // center circle, taking the pass
+  WD: [0.28, 0.62],  // left at lower transverse line
+  GD: [0.62, 0.64],  // right at lower transverse line
+  GK: [0.38, 0.83],  // Ice goal third — left
 };
 
 const ICE_INIT: Record<string, [number, number]> = {
-  GS: [0.65, 0.83],
-  GA: [0.42, 0.70],
-  WA: [0.75, 0.58],
-  C:  [0.60, 0.52],
-  WD: [0.32, 0.40],
-  GD: [0.58, 0.27],
-  GK: [0.72, 0.15],
+  GS: [0.57, 0.83],  // Ice goal third — right
+  GA: [0.76, 0.64],  // right at lower transverse (opposing GD)
+  WA: [0.18, 0.62],  // left at lower transverse (opposing WD)
+  C:  [0.60, 0.52],  // just outside center (waiting during Fire's pass)
+  WD: [0.62, 0.34],  // right at upper transverse (opposing WA)
+  GD: [0.30, 0.37],  // left at upper transverse (opposing GA)
+  GK: [0.53, 0.17],  // Fire goal third — right (marking GS)
 };
 
 // ── Heatmap colour stops ──────────────────────────────────────────────────────
@@ -105,12 +97,6 @@ function heatColor(normY: number): string {
   }
   const f = (t - lo.t) / (hi.t - lo.t);
   return `rgb(${Math.round(lo.r + (hi.r - lo.r) * f)},${Math.round(lo.g + (hi.g - lo.g) * f)},${Math.round(lo.b + (hi.b - lo.b) * f)})`;
-}
-
-function zoneLabel(normY: number) {
-  if (normY < 0.33) return "FIRE ATTACK";
-  if (normY > 0.67) return "ICE ATTACK";
-  return "CENTRE";
 }
 
 // ── PlayerToken ───────────────────────────────────────────────────────────────
@@ -193,19 +179,6 @@ const PlayerToken: React.FC<TokenProps> = ({
           : `drop-shadow(0 2px 5px ${hex}99)`,
       }}
     >
-      {/* selection ring */}
-      {isSelected && (
-        <div
-          style={{
-            position: "absolute",
-            inset: -4,
-            borderRadius: 8,
-            border: "2px solid rgba(255,255,255,0.9)",
-            boxShadow: `0 0 12px 3px rgba(255,255,255,0.25), 0 0 0 1px ${hex}`,
-            pointerEvents: "none",
-          }}
-        />
-      )}
       <BibSvg code={code} team={team} />
     </motion.div>
   );
@@ -216,8 +189,7 @@ const BallToken: React.FC<{
   courtW: number;
   courtH: number;
   resetKey: number;
-  onNormYChange: (normY: number) => void;
-}> = ({ courtW, courtH, resetKey, onNormYChange }) => {
+}> = ({ courtW, courtH, resetKey }) => {
   const x = useMotionValue(0.5 * courtW);
   const y = useMotionValue(0.5 * courtH);
   const [color, setColor] = useState(() => heatColor(0.5));
@@ -226,16 +198,14 @@ const BallToken: React.FC<{
     x.set(0.5 * courtW);
     y.set(0.5 * courtH);
     setColor(heatColor(0.5));
-    onNormYChange(0.5);
   }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     return y.on("change", (v) => {
       const normY = courtH > 0 ? v / courtH : 0.5;
       setColor(heatColor(normY));
-      onNormYChange(normY);
     });
-  }, [y, courtH, onNormYChange]);
+  }, [y, courtH]);
 
   if (courtW === 0) return null;
 
@@ -285,7 +255,6 @@ export const InteractiveCourt: React.FC = () => {
   const courtRef = useRef<HTMLDivElement>(null);
   const [courtSize, setCourtSize] = useState({ w: 0, h: 0 });
   const [resetKey, setResetKey] = useState(0);
-  const [ballNormY, setBallNormY] = useState(0.5);
   const [selected, setSelected] = useState<Selected | null>(null);
 
   useEffect(() => {
@@ -298,8 +267,6 @@ export const InteractiveCourt: React.FC = () => {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-
-  const handleBallNormY = useCallback((v: number) => setBallNormY(v), []);
 
   const handleSelect = useCallback((code: string, team: Team) => {
     setSelected(prev =>
@@ -322,12 +289,6 @@ export const InteractiveCourt: React.FC = () => {
   const selectedHex  = selectedPos && selected
     ? (selected.team === "Fire" ? selectedPos.fireHex : selectedPos.iceHex)
     : null;
-
-  const ballColor    = heatColor(ballNormY);
-  const currentZone  = zoneLabel(ballNormY);
-
-  // Thermometer indicator top%
-  const indicatorPct = THERM_TOP_PCT + ballNormY * THERM_RANGE_PCT;
 
   return (
     <div className="flex flex-col h-full select-none">
@@ -358,19 +319,15 @@ export const InteractiveCourt: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Court + Thermometer ── */}
-      {/* Width-driven layout: court width is fixed, height follows aspect ratio,   */}
-      {/* capped by maxHeight so it never overflows on short viewports.             */}
-      <div className="flex-1 flex items-center justify-center px-2 overflow-hidden py-1">
-        <div className="flex items-end gap-2">
-
-          {/* ── Court ── */}
+      {/* ── Court ── */}
+      {/* Width-driven: fixed width, height via aspect-ratio, capped by maxHeight */}
+      <div className="flex-1 flex items-center justify-center px-4 overflow-hidden py-1">
           <div
             ref={courtRef}
             className="relative overflow-hidden flex-shrink-0"
             style={{
               aspectRatio: "356 / 709",
-              width: "min(295px, calc(100vw - 64px))",
+              width: "min(320px, calc(100vw - 32px))",
               maxHeight: "calc(100dvh - 196px)",
               background: "#0b0b10",
               boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
@@ -383,7 +340,7 @@ export const InteractiveCourt: React.FC = () => {
               className="absolute left-0 right-0 top-0 pointer-events-none"
               style={{
                 height: "33.5%",
-                background: "linear-gradient(to bottom, rgba(229,57,53,0.10) 0%, transparent 100%)",
+                background: "linear-gradient(to bottom, rgba(229,57,53,0.13) 0%, transparent 100%)",
               }}
             />
             {/* Ice goal tint */}
@@ -391,8 +348,54 @@ export const InteractiveCourt: React.FC = () => {
               className="absolute left-0 right-0 bottom-0 pointer-events-none"
               style={{
                 height: "33.5%",
-                background: "linear-gradient(to top, rgba(30,136,229,0.10) 0%, transparent 100%)",
+                background: "linear-gradient(to top, rgba(30,136,229,0.13) 0%, transparent 100%)",
               }}
+            />
+
+            {/* ── Fire goal hoop glow (top) ── */}
+            <motion.div
+              className="absolute pointer-events-none"
+              style={{ top: "1.5%", left: "50%", translateX: "-50%", width: 20, height: 20, borderRadius: "50%" }}
+              animate={{
+                boxShadow: [
+                  "0 0 6px 3px rgba(255,100,0,0.65), 0 0 18px 8px rgba(255,60,0,0.30)",
+                  "0 0 12px 6px rgba(255,170,0,0.85), 0 0 28px 14px rgba(255,80,0,0.45)",
+                  "0 0 8px 4px rgba(255,120,0,0.70), 0 0 22px 10px rgba(255,50,0,0.35)",
+                  "0 0 14px 7px rgba(255,190,0,0.90), 0 0 32px 16px rgba(255,90,0,0.50)",
+                  "0 0 6px 3px rgba(255,100,0,0.65), 0 0 18px 8px rgba(255,60,0,0.30)",
+                ],
+                background: [
+                  "rgba(255,90,0,0.75)",
+                  "rgba(255,170,0,0.95)",
+                  "rgba(255,100,0,0.80)",
+                  "rgba(255,190,0,1.00)",
+                  "rgba(255,90,0,0.75)",
+                ],
+              }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            />
+
+            {/* ── Frost goal hoop glow (bottom) ── */}
+            <motion.div
+              className="absolute pointer-events-none"
+              style={{ bottom: "1.5%", left: "50%", translateX: "-50%", width: 20, height: 20, borderRadius: "50%" }}
+              animate={{
+                boxShadow: [
+                  "0 0 6px 3px rgba(100,200,255,0.55), 0 0 18px 8px rgba(30,140,230,0.25)",
+                  "0 0 12px 6px rgba(160,230,255,0.80), 0 0 28px 14px rgba(80,180,255,0.40)",
+                  "0 0 8px 4px rgba(120,210,255,0.65), 0 0 22px 10px rgba(50,160,240,0.30)",
+                  "0 0 10px 5px rgba(180,240,255,0.85), 0 0 26px 13px rgba(100,200,255,0.45)",
+                  "0 0 6px 3px rgba(100,200,255,0.55), 0 0 18px 8px rgba(30,140,230,0.25)",
+                ],
+                background: [
+                  "rgba(80,180,255,0.70)",
+                  "rgba(180,235,255,0.95)",
+                  "rgba(100,200,255,0.80)",
+                  "rgba(200,240,255,1.00)",
+                  "rgba(80,180,255,0.70)",
+                ],
+              }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             />
 
             {/* Court lines */}
@@ -441,78 +444,8 @@ export const InteractiveCourt: React.FC = () => {
               courtW={courtSize.w}
               courtH={courtSize.h}
               resetKey={resetKey}
-              onNormYChange={handleBallNormY}
             />
           </div>
-
-          {/* ── Thermometer column ── */}
-          <div
-            className="flex-shrink-0 flex flex-col items-center gap-1"
-            style={{ width: 38 }}
-          >
-            {/* HOT label + fire emoji */}
-            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-              <span className="text-xs leading-none">🔥</span>
-              <span className="text-[8px] font-black uppercase tracking-widest text-white/30 leading-none">Hot</span>
-            </div>
-
-            {/* Thermometer SVG + indicator */}
-            <div className="relative flex-1 w-full">
-              {/* Gradient fill SVG */}
-              <div
-                className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-                dangerouslySetInnerHTML={{ __html: THERM_RANGE_SVG }}
-              />
-
-              {/* Live ball-position indicator */}
-              <div
-                className="absolute left-1/2 pointer-events-none"
-                style={{
-                  width: 18,
-                  height: 18,
-                  top: `${indicatorPct}%`,
-                  transform: "translate(-50%, -50%)",
-                  borderRadius: "50%",
-                  background: ballColor,
-                  border: "2px solid rgba(255,255,255,0.9)",
-                  boxShadow: `0 0 0 2px ${ballColor}50, 0 0 18px 6px ${ballColor}88`,
-                  transition: "top 80ms linear, background 80ms linear, box-shadow 80ms linear",
-                }}
-              />
-            </div>
-
-            {/* COLD label + snowflake */}
-            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-              <span className="text-[8px] font-black uppercase tracking-widest text-white/30 leading-none">Cold</span>
-              <span className="text-xs leading-none">❄️</span>
-            </div>
-
-            {/* Zone label — shows what zone the ball is in */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentZone}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.25 }}
-                className="flex-shrink-0 flex items-center justify-center"
-                style={{ width: 38 }}
-              >
-                <span
-                  className="text-[7px] font-black uppercase tracking-wider text-center leading-tight whitespace-nowrap"
-                  style={{
-                    color: ballColor,
-                    writingMode: "vertical-rl",
-                    transform: "rotate(180deg)",
-                  }}
-                >
-                  {currentZone}
-                </span>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-        </div>
       </div>
 
       {/* ── Info bar ── */}
