@@ -335,12 +335,12 @@ export const InteractiveCourt: React.FC = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p
-                  className="text-[12px] font-black leading-tight truncate"
+                  className="text-[12px] font-black leading-tight truncate text-center"
                   style={{ color: selectedHex }}
                 >
                   {selected!.team} · {selectedPos.name}
                 </p>
-                <p className="text-[10px] text-white/45 leading-snug mt-0.5 line-clamp-2">
+                <p className="text-white/45 mt-0.5 line-clamp-2 text-center text-[12px]">
                   {selectedPos.zoneCaption}
                 </p>
               </div>
