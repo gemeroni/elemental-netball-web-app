@@ -326,7 +326,7 @@ export const InteractiveCourt: React.FC = () => {
             ref={courtRef}
             className="relative overflow-hidden flex-shrink-0"
             style={{
-              aspectRatio: "356 / 709",
+              aspectRatio: "1356 / 2600",
               width: "min(320px, calc(100vw - 32px))",
               maxHeight: "calc(100dvh - 196px)",
               background: "#0b0b10",
@@ -335,21 +335,13 @@ export const InteractiveCourt: React.FC = () => {
             }}
             onClick={handleCourtClick}
           >
-            {/* Fire goal tint */}
-            <div
-              className="absolute left-0 right-0 top-0 pointer-events-none"
-              style={{
-                height: "33.5%",
-                background: "linear-gradient(to bottom, rgba(229,57,53,0.13) 0%, transparent 100%)",
-              }}
-            />
-            {/* Ice goal tint */}
-            <div
-              className="absolute left-0 right-0 bottom-0 pointer-events-none"
-              style={{
-                height: "33.5%",
-                background: "linear-gradient(to top, rgba(30,136,229,0.13) 0%, transparent 100%)",
-              }}
+            {/* ── Spectrum court background ── */}
+            {/* Zone areas filled with elemental gradient; court line gaps show #0b0b10 */}
+            <img
+              src="/assets/svg/Spectrum_Court.svg"
+              aria-hidden
+              className="absolute inset-0 w-full h-full pointer-events-none select-none"
+              style={{ opacity: 0.55, objectFit: "fill" }}
             />
 
             {/* ── Fire goal hoop glow (top) ── */}
@@ -398,10 +390,10 @@ export const InteractiveCourt: React.FC = () => {
               transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            {/* Court lines */}
+            {/* White court lines overlay */}
             <div
               className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-              style={{ opacity: 0.55 }}
+              style={{ opacity: 0.30 }}
               dangerouslySetInnerHTML={{ __html: COURT_SVG }}
             />
 
