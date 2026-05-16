@@ -4,7 +4,7 @@ import { courtLinesRaw } from "@/assets/zoneSvgs";
 import { POSITIONS } from "@/data/positions";
 import type { Team } from "@/data/positions";
 import { BibSvg } from "./BibSvg";
-import netballRaw from "@/assets/svg/Netball.svg?raw";
+import netballOutlineRaw from "@/assets/svg/Netball_Outline.svg?raw";
 
 // ── Pre-process SVGs once at module load ─────────────────────────────────────
 const COURT_SVG = courtLinesRaw
@@ -12,7 +12,7 @@ const COURT_SVG = courtLinesRaw
   .replace(/<!DOCTYPE[^>]*>/gi, "")
   .trim();
 
-const BALL_SVG = netballRaw
+const OUTLINE_SVG = netballOutlineRaw
   .replace(/<\?xml[^?]*\?>/g, "")
   .replace(/<!DOCTYPE[^>]*>/gi, "")
   .trim();
@@ -157,17 +157,50 @@ const PlayerToken: React.FC<TokenProps> = ({
   );
 };
 
-// ── Ball token (Netball SVG) ─────────────────────────────────────────────────
+// ── Heatmap colour interpolation ─────────────────────────────────────────────
+// Stops mirror Zone_Heatmap.svg linearGradient (offset=0 → court bottom,
+// offset=1 → court top).  normY runs 0 (top) → 1 (bottom), so we invert.
+const HEAT_STOPS: { t: number; r: number; g: number; b: number }[] = [
+  { t: 0.05, r: 102, g:  51, b: 153 }, // #663399 purple  — bottom
+  { t: 0.20, r:   0, g:  82, b: 179 }, // #0052b3 blue
+  { t: 0.35, r:   0, g: 153, b: 153 }, // #009999 teal
+  { t: 0.50, r:   0, g: 153, b:  51 }, // #009933 green
+  { t: 0.65, r: 255, g: 170, b:   0 }, // #ffaa00 amber
+  { t: 0.80, r: 239, g: 109, b:  34 }, // #ef6d22 orange
+  { t: 0.95, r: 204, g:  51, b:  51 }, // #cc3333 red    — top
+];
+
+function heatColor(normY: number): string {
+  // normY 0=top(red) → 1=bottom(purple); gradient offset = 1 − normY
+  const t = Math.max(HEAT_STOPS[0].t, Math.min(HEAT_STOPS[HEAT_STOPS.length - 1].t, 1 - normY));
+  let lo = HEAT_STOPS[0];
+  let hi = HEAT_STOPS[HEAT_STOPS.length - 1];
+  for (let i = 0; i < HEAT_STOPS.length - 1; i++) {
+    if (t >= HEAT_STOPS[i].t && t <= HEAT_STOPS[i + 1].t) {
+      lo = HEAT_STOPS[i]; hi = HEAT_STOPS[i + 1]; break;
+    }
+  }
+  const f = (t - lo.t) / (hi.t - lo.t);
+  return `rgb(${Math.round(lo.r + (hi.r - lo.r) * f)},${Math.round(lo.g + (hi.g - lo.g) * f)},${Math.round(lo.b + (hi.b - lo.b) * f)})`;
+}
+
+// ── Ball token — spectral heatmap colour + Netball_Outline seam overlay ──────
 const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> = ({
   courtW, courtH, resetKey,
 }) => {
   const x = useMotionValue(0.5 * courtW);
   const y = useMotionValue(0.5 * courtH);
+  const [color, setColor] = useState(() => heatColor(0.5));
 
   useEffect(() => {
     x.set(0.5 * courtW);
     y.set(0.5 * courtH);
+    setColor(heatColor(0.5));
   }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    return y.on("change", (v) => setColor(heatColor(courtH > 0 ? v / courtH : 0.5)));
+  }, [y, courtH]);
 
   if (courtW === 0) return null;
 
@@ -187,11 +220,26 @@ const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> 
         touchAction: "none",
         zIndex: 20,
         cursor: "grab",
-        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.7))",
+        filter: `drop-shadow(0 2px 8px ${color}cc)`,
       }}
-      className="[&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-      dangerouslySetInnerHTML={{ __html: BALL_SVG }}
-    />
+    >
+      {/* Layer 1 — spectral fill circle */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: "50%",
+          background: color,
+          transition: "background 80ms linear",
+        }}
+      />
+      {/* Layer 2 — Netball_Outline seam lines (fill:none, dark strokes) */}
+      <div
+        style={{ position: "absolute", inset: 0 }}
+        className="[&>svg]:w-full [&>svg]:h-full [&>svg]:block [&>svg]:overflow-visible"
+        dangerouslySetInnerHTML={{ __html: OUTLINE_SVG }}
+      />
+    </motion.div>
   );
 };
 
