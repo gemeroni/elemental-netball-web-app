@@ -373,7 +373,7 @@ export const InteractiveCourt: React.FC = () => {
                   className="text-[12px] font-black leading-tight truncate text-center"
                   style={{ color: selectedHex }}
                 >
-                  {selected!.team} · {selectedPos.name}
+                  {selected!.team === "Fire" ? "🔥" : "🧊"} · {selectedPos.name}
                 </p>
                 <p className="text-white/45 mt-0.5 line-clamp-2 text-center text-[12px]">
                   {selectedPos.zoneCaption}
