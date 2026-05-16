@@ -12,6 +12,7 @@ export interface Position {
   role: string;
   zones: string;
   zoneCaption: string;
+  note: string;
   matchup: string;
   matchupDescription: string;
 }
@@ -29,6 +30,7 @@ export const POSITIONS: Position[] = [
     role: "Lead strongly into space, hold position inside the goal circle, and use sharp footwork to outwit the defender and convert shots at goal.",
     zones: "Attacking Goal Third only — including inside the goal circle.",
     zoneCaption: "GS can play in the attacking Goal Third only, including inside the goal circle.",
+    note: "Works closely with GA. One of only two positions allowed to shoot for goal.",
     matchup: "GK",
     matchupDescription:
       "GS works to get into the goal circle, hold space, and convert. GK is the last barrier — contesting every lead into the circle, pressuring every shot, and fighting for the rebound. GS wins by getting free inside the circle; GK wins by taking that space away.",
@@ -45,6 +47,7 @@ export const POSITIONS: Position[] = [
     role: "Link the midcourt with the goal circle, team up with GS, connect C and WA to the attack, and chase every rebound off the post.",
     zones: "Centre Third and attacking Goal Third — including inside the goal circle.",
     zoneCaption: "GA can play in the Centre Third and attacking Goal Third, including inside the goal circle.",
+    note: "One of only two positions allowed to shoot for goal. Needs to be quick and tactically clever.",
     matchup: "GD",
     matchupDescription:
       "GA is both a creator and a shooter — linking midcourt to the goal circle and teaming up with GS. GD tracks GA everywhere, looking to intercept every entry pass and pressure any shot GA attempts. GA wins by creating separation; GD wins by staying goal-side and tight.",
@@ -61,6 +64,7 @@ export const POSITIONS: Position[] = [
     role: "Receive the Centre Pass, create space, and deliver the ball into the goal circle for GS and GA.",
     zones: "Centre Third and attacking Goal Third — cannot enter the goal circle.",
     zoneCaption: "WA can play in the Centre Third and attacking Goal Third, but cannot enter the goal circle.",
+    note: "Crucial at the Centre Pass. Works closely with GA and GS to build attacking play.",
     matchup: "WD",
     matchupDescription:
       "WA's most important moment is the Centre Pass — they need to break free and give C a clean outlet. WD works to deny that first pass, shadow WA through the centre, and slow the attack. Whoever wins this matchup at each Centre Pass sets the tone for the whole possession.",
@@ -77,6 +81,7 @@ export const POSITIONS: Position[] = [
     role: "Link attack and defence across the court. C is the only position that can enter all thirds — attacking when their team has the ball, defending when they don't.",
     zones: "All thirds of the court — except for goal circles.",
     zoneCaption: "C can play in all three thirds — the full length of the court. Cannot enter either goal circle.",
+    note: "Centre does the most running of any position on court — attacks AND defends. Starts every possession with the Centre Pass, and tracks back on every turnover.",
     matchup: "C",
     matchupDescription:
       "The C battle is the midcourt engine room. Both Centres compete for space, intercepts, and momentum. The C with the ball delivers the Centre Pass and drives the attack; the opposing C pressures, shadows, and tries to force a turnover. Centre attacks AND defends — it is the most demanding role on court.",
@@ -93,6 +98,7 @@ export const POSITIONS: Position[] = [
     role: "Shadow WA, shut down their attacking moves, and slow the ball before it reaches the shooters.",
     zones: "Centre Third and defensive Goal Third — cannot enter the goal circle.",
     zoneCaption: "WD can play in the Centre Third and defensive Goal Third, but cannot enter the goal circle.",
+    note: "Especially important at the Centre Pass, working to intercept or disrupt WA's first touch.",
     matchup: "WA",
     matchupDescription:
       "WD shadows WA through the centre, working to deny space and disrupt the Centre Pass. WA uses sharp leads and quick changes of direction to get free. WD wins by staying tight and forcing hesitation; WA wins by finding that half-step of separation at the right moment.",
@@ -109,6 +115,7 @@ export const POSITIONS: Position[] = [
     role: "Stick with GA, block entry into the goal circle, challenge every shot at goal, and compete for every rebound.",
     zones: "Centre Third and defensive Goal Third — including inside the goal circle.",
     zoneCaption: "GD can play in the Centre Third and defensive Goal Third, including inside the goal circle.",
+    note: "Teams up with GK to form a strong defensive partnership protecting the post.",
     matchup: "GA",
     matchupDescription:
       "GD sticks with GA from the transverse line to the goal circle, contesting every entry pass and challenging every shot. GA uses pace and clever angles to create separation. GD wins by staying goal-side; GA wins by finding that gap at exactly the right moment.",
@@ -125,6 +132,7 @@ export const POSITIONS: Position[] = [
     role: "Stop both shooters from scoring by contesting space, challenging every shot, and fighting for every rebound. Often the tallest player on the team.",
     zones: "Defensive Goal Third only — including inside the goal circle.",
     zoneCaption: "GK can play in the defensive Goal Third only, including inside the goal circle.",
+    note: "Works closely with GD to protect the post. Needs good balance and reach to stretch and mark both GS and GA inside the goal circle.",
     matchup: "GS",
     matchupDescription:
       "GK is the last barrier — their only job is to stop GS from scoring. Contest every lead into the goal circle, pressure every shot without obstructing, and win every rebound. GS wins if they get clear space inside the circle; GK wins by making sure they never do.",

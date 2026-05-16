@@ -1,127 +1,259 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { TheCourtSection } from "./sections/TheCourtSection";
-import { PositionsSection } from "./sections/PositionsSection";
-import { TheRulesSection } from "./sections/TheRulesSection";
-import { PickYourSideSection } from "./sections/PickYourSideSection";
-
-type SectionType = "hub" | "court" | "positions" | "rules" | "pick";
+import { BibSvg } from "./BibSvg";
+import { POSITIONS, getPositionByCode } from "@/data/positions";
+import type { Team } from "@/data/positions";
 
 export const ElementalNetball: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<SectionType>("hub");
+  const [activePos, setActivePos] = useState("GS");
+  const [activeTeam, setActiveTeam] = useState<Team>("Fire");
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case "court":
-        return <TheCourtSection onBack={() => setActiveSection("hub")} />;
-      case "positions":
-        return <PositionsSection onBack={() => setActiveSection("hub")} />;
-      case "rules":
-        return <TheRulesSection onBack={() => setActiveSection("hub")} />;
-      case "pick":
-        return <PickYourSideSection onBack={() => setActiveSection("hub")} />;
-      default:
-        return null;
-    }
-  };
+  const pos = getPositionByCode(activePos)!;
+  const opponent = getPositionByCode(pos.matchup)!;
+
+  const isFire = activeTeam === "Fire";
+  const activeHex = isFire ? pos.fireHex : pos.iceHex;
+
+  const leftCode = activePos;
+  const leftTeam = activeTeam;
+  const rightCode = pos.matchup;
+  const rightTeam: Team = isFire ? "Ice" : "Fire";
+  const rightHex = isFire ? opponent.iceHex : opponent.fireHex;
 
   return (
-    <div className="min-h-[100dvh] w-full bg-background text-foreground overflow-hidden font-sans relative" data-testid="app-container">
-      <AnimatePresence mode="wait">
-        {activeSection === "hub" ? (
-          <motion.div 
-            key="hub"
-            className="w-full min-h-[100dvh] flex flex-col items-center justify-center p-6"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
+    <div
+      className="min-h-[100dvh] w-full bg-background text-foreground font-sans flex flex-col"
+      data-testid="app-container"
+    >
+      {/* ── Header ───────────────────────────────────────── */}
+      <header className="sticky top-0 z-30 bg-[#111] border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 gap-3">
+          <div className="min-w-0">
+            <h1 className="text-base font-black uppercase tracking-tight text-white leading-none">
+              Elemental <span className="text-primary">Netball</span>
+            </h1>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
+              Position Logic
+            </p>
+          </div>
+
+          {/* Fire / Ice toggle */}
+          <div className="flex rounded-lg overflow-hidden border border-white/15 flex-shrink-0">
+            <button
+              onClick={() => setActiveTeam("Fire")}
+              className={`px-3 py-2 text-[11px] font-black uppercase tracking-wider transition-all duration-200 ${
+                isFire
+                  ? "bg-[#E53935] text-white"
+                  : "bg-transparent text-muted-foreground hover:text-white"
+              }`}
+              data-testid="toggle-fire"
+            >
+              🔥 Fire
+            </button>
+            <button
+              onClick={() => setActiveTeam("Ice")}
+              className={`px-3 py-2 text-[11px] font-black uppercase tracking-wider transition-all duration-200 ${
+                !isFire
+                  ? "bg-[#1E88E5] text-white"
+                  : "bg-transparent text-muted-foreground hover:text-white"
+              }`}
+              data-testid="toggle-ice"
+            >
+              Ice 🧊
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto">
+        {/* ── Matchup Band ─────────────────────────────────── */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`matchup-${activePos}-${activeTeam}`}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="bg-card border-b border-border px-4 py-4 relative overflow-hidden"
           >
-            <div className="max-w-md w-full mx-auto space-y-8">
-              <div className="text-center space-y-2">
-                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-white drop-shadow-md">
-                  Elemental<br/>
-                  <span className="text-primary">Netball</span>
-                </h1>
-                <p className="text-muted-foreground font-medium">Learn the game. Choose your side.</p>
+            {/* Background glow */}
+            <div
+              className="absolute inset-0 opacity-5 pointer-events-none"
+              style={{ background: `linear-gradient(135deg, ${activeHex}, transparent 60%)` }}
+            />
+
+            <div className="relative flex items-center gap-3">
+              {/* Left bib — active team's position */}
+              <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                <div className="w-14 h-[68px]">
+                  <BibSvg code={leftCode} team={leftTeam} />
+                </div>
+                <span
+                  className="text-[9px] uppercase tracking-widest font-black"
+                  style={{ color: activeHex }}
+                >
+                  {leftTeam}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <HubTile 
-                  title="The Court" 
-                  color="var(--chart-3)" 
-                  onClick={() => setActiveSection("court")} 
-                  testId="tile-court"
-                />
-                <HubTile 
-                  title="Positions" 
-                  color="var(--chart-4)" 
-                  onClick={() => setActiveSection("positions")} 
-                  testId="tile-positions"
-                />
-                <HubTile 
-                  title="The Rules" 
-                  color="var(--destructive)" 
-                  onClick={() => setActiveSection("rules")} 
-                  testId="tile-rules"
-                />
-                <HubTile 
-                  title="Pick Your Side" 
-                  color="var(--chart-5)" 
-                  onClick={() => setActiveSection("pick")} 
-                  testId="tile-pick"
-                />
+              {/* Centre: position name + tagline + vs */}
+              <div className="flex-1 text-center min-w-0">
+                <p
+                  className="text-[10px] uppercase tracking-widest font-black mb-0.5"
+                  style={{ color: activeHex }}
+                >
+                  {pos.code}
+                </p>
+                <h2 className="font-black text-base uppercase tracking-tight text-white leading-tight">
+                  {pos.name}
+                </h2>
+                <p className="text-[11px] italic text-muted-foreground mb-2">
+                  {pos.tagline}
+                </p>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div
+                    className="h-px flex-1 opacity-30"
+                    style={{ backgroundColor: activeHex }}
+                  />
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                    vs
+                  </span>
+                  <div
+                    className="h-px flex-1 opacity-30"
+                    style={{ backgroundColor: rightHex }}
+                  />
+                </div>
+                <p className="text-xs font-bold text-muted-foreground">
+                  {opponent.name}
+                </p>
+                <p className="text-[10px] italic text-muted-foreground/70">
+                  {opponent.tagline}
+                </p>
+              </div>
+
+              {/* Right bib — opponent's position */}
+              <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                <div className="w-14 h-[68px] opacity-80">
+                  <BibSvg code={rightCode} team={rightTeam} />
+                </div>
+                <span
+                  className="text-[9px] uppercase tracking-widest font-black"
+                  style={{ color: rightHex }}
+                >
+                  {rightTeam}
+                </span>
               </div>
             </div>
           </motion.div>
-        ) : (
+        </AnimatePresence>
+
+        {/* ── Bib Selector ─────────────────────────────────── */}
+        <div className="bg-background border-b border-border px-3 py-3">
+          <p className="text-[9px] uppercase tracking-widest font-black text-muted-foreground text-center mb-2">
+            {activeTeam} Team — tap a position
+          </p>
+          <div className="flex justify-around items-end">
+            {POSITIONS.map((p) => {
+              const isActive = p.code === activePos;
+              const hex = isFire ? p.fireHex : p.iceHex;
+              return (
+                <motion.button
+                  key={p.code}
+                  onClick={() => setActivePos(p.code)}
+                  whileTap={{ scale: 0.88 }}
+                  className="flex flex-col items-center gap-1 focus:outline-none"
+                  data-testid={`pos-tab-${p.code}`}
+                >
+                  <motion.div
+                    animate={{ scale: isActive ? 1.2 : 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="w-10 h-12 transition-opacity"
+                    style={{
+                      opacity: isActive ? 1 : 0.4,
+                      filter: isActive
+                        ? `drop-shadow(0 0 6px ${hex})`
+                        : "none",
+                    }}
+                  >
+                    <BibSvg code={p.code} team={activeTeam} />
+                  </motion.div>
+                  <span
+                    className="text-[9px] font-black uppercase tracking-wide transition-all"
+                    style={{ color: isActive ? hex : "transparent" }}
+                  >
+                    {p.code}
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Position Details ──────────────────────────────── */}
+        <AnimatePresence mode="wait">
           <motion.div
-            key="section"
-            className="w-full min-h-[100dvh] flex flex-col absolute inset-0 bg-background"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            transition={{ duration: 0.3 }}
+            key={`details-${activePos}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22 }}
+            className="p-4 space-y-3 pb-8"
           >
-            {renderSection()}
+            {/* Role */}
+            <section className="bg-card rounded-2xl border border-border p-4">
+              <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+                Role
+              </h3>
+              <p className="text-sm text-foreground leading-relaxed">
+                {pos.role}
+              </p>
+            </section>
+
+            {/* Zone */}
+            <section className="bg-card rounded-2xl border border-border p-4">
+              <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+                Zone
+              </h3>
+              <p className="text-sm text-foreground leading-relaxed">
+                {pos.zoneCaption}
+              </p>
+            </section>
+
+            {/* Note */}
+            <section className="bg-card rounded-2xl border border-border p-4">
+              <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+                Note
+              </h3>
+              <p className="text-sm text-foreground leading-relaxed">
+                {pos.note}
+              </p>
+            </section>
+
+            {/* Matchup */}
+            <section
+              className="rounded-2xl border p-4"
+              style={{
+                borderColor: `${activeHex}50`,
+                borderLeftColor: activeHex,
+                borderLeftWidth: "4px",
+                backgroundColor: `${activeHex}12`,
+              }}
+            >
+              <h3
+                className="text-[10px] uppercase tracking-widest font-black mb-2"
+                style={{ color: activeHex }}
+              >
+                {pos.code === pos.matchup
+                  ? "The Centre Battle"
+                  : `Matchup · ${pos.code} vs ${pos.matchup}`}
+              </h3>
+              <p className="text-sm text-foreground leading-relaxed">
+                {pos.matchupDescription}
+              </p>
+            </section>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
     </div>
-  );
-};
-
-interface HubTileProps {
-  title: string;
-  color: string;
-  onClick: () => void;
-  testId: string;
-}
-
-const HubTile: React.FC<HubTileProps> = ({ title, color, onClick, testId }) => {
-  return (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={onClick}
-      className="relative overflow-hidden rounded-2xl aspect-square flex items-end p-4 border border-white/10 shadow-lg text-left transition-colors hover:border-white/30"
-      style={{
-        background: `linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.5) 100%), ${color}20`
-      }}
-      data-testid={testId}
-    >
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{ backgroundColor: color }}
-      />
-      <div 
-        className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"
-        style={{ backgroundColor: color, opacity: 0.4 }}
-      />
-      <h2 className="relative z-10 text-xl font-bold text-white shadow-black drop-shadow-sm uppercase leading-tight tracking-tight">
-        {title}
-      </h2>
-    </motion.button>
   );
 };
