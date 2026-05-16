@@ -290,11 +290,10 @@ export const InteractiveCourt: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full select-none">
-
       {/* ── Header bar ── */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2 flex-shrink-0">
         <div className="flex items-center gap-1">
-          <span className="text-sm leading-none">🔥</span>
+          <span className="text-[20px]">🔥</span>
           <div className="text-left">
             <p className="text-[11px] font-black uppercase tracking-wider text-[#E53935] leading-none">Fire</p>
             <p className="text-[9px] text-white/35 leading-none mt-0.5">attacks ↑</p>
@@ -313,10 +312,9 @@ export const InteractiveCourt: React.FC = () => {
             <p className="text-[11px] font-black uppercase tracking-wider text-[#1E88E5] leading-none">Ice</p>
             <p className="text-[9px] text-white/35 leading-none mt-0.5">attacks ↓</p>
           </div>
-          <span className="text-sm leading-none">❄️</span>
+          <span className="text-[20px]">❄️</span>
         </div>
       </div>
-
       {/* ── Court ── */}
       {/* Width-driven: fixed width, height via aspect-ratio, capped by maxHeight */}
       <div className="flex-1 flex items-center justify-center px-4 overflow-hidden py-1">
@@ -392,7 +390,6 @@ export const InteractiveCourt: React.FC = () => {
             />
           </div>
       </div>
-
       {/* ── Info bar ── */}
       <div
         className="flex-shrink-0 px-4 py-2 min-h-[54px] flex items-center"
@@ -443,7 +440,6 @@ export const InteractiveCourt: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
-
     </div>
   );
 };

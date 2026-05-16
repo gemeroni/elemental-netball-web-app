@@ -29,7 +29,7 @@ export const POSITIONS: Position[] = [
     tagline: "the team's top scorer",
     role: "GS works inside the shooting circle alongside GA to score goals for their team. GS holds space, creates leads to receive the ball, and converts every shot opportunity to help their team win.",
     zones: "Attacking goal third only — including the shooting circle.",
-    zoneCaption: "GS stays in the attacking goal third only. They can enter the shooting circle to shoot.",
+    zoneCaption: "GS stays in the attacking goal third only and works with GA to shoot goals from inside the goal circle.",
     note: "GS and GA are the only two players allowed to shoot for goal — and only from inside the shooting circle.",
     matchup: "GK",
     matchupDescription:
