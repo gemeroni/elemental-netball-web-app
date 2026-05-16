@@ -58,11 +58,17 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
 
   // Hex → rgba helper for inline styles
   const hex = accentHex;
-  const glow = `${hex}60`;
-  const glowFaint = `${hex}18`;
-
   // Pick the thermometer matching this position's elemental temperature
   const thermSvg = HEX_TO_THERM[hex.toLowerCase()] ?? HEX_TO_THERM["#009933"];
+  const thermGlow = {
+    "#cc3333": "0 0 16px rgba(204,51,51,0.95), 0 0 30px rgba(204,51,51,0.55)",
+    "#ef6d22": "0 0 16px rgba(239,109,34,0.95), 0 0 30px rgba(239,109,34,0.55)",
+    "#ffaa00": "0 0 16px rgba(255,170,0,0.95), 0 0 30px rgba(255,170,0,0.55)",
+    "#009933": "0 0 16px rgba(0,153,51,0.95), 0 0 30px rgba(0,153,51,0.55)",
+    "#009999": "0 0 16px rgba(0,153,153,0.95), 0 0 30px rgba(0,153,153,0.55)",
+    "#0052b3": "0 0 16px rgba(0,82,179,0.95), 0 0 30px rgba(0,82,179,0.55)",
+    "#663399": "0 0 16px rgba(102,51,153,0.95), 0 0 30px rgba(102,51,153,0.55)",
+  }[hex.toLowerCase()] ?? "0 0 16px rgba(0,153,51,0.95), 0 0 30px rgba(0,153,51,0.55)";
 
   return (
     <div className="px-4 pb-2">
@@ -98,15 +104,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
         {/* ── Court diagram + Thermometer ────────────────────────── */}
         <div className="flex justify-center items-center px-6 py-4 gap-3">
           {/* Fixed aspect-ratio court frame */}
-          <div
-            className="relative overflow-hidden flex-shrink-0"
-            style={{
-              aspectRatio: "356 / 709",
-              width: 120,
-              background: "#0c0c12",
-              boxShadow: `0 0 0 1px ${hex}20, 0 8px 32px rgba(0,0,0,0.6)`,
-            }}
-          >
+          <div className="relative overflow-hidden flex-shrink-0" style={{ aspectRatio: "356 / 709", width: 120, background: "#0c0c12" }}>
             {/* ── Layer 1: Zone colour fill + bloom glow ──────────── */}
             {/* Ice zones are the vertical mirror of Fire zones — scaleY(-1) flips  */}
             {/* the fill to the correct end without needing separate Ice SVG assets. */}
@@ -118,9 +116,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.22 }}
-                style={{
-                  filter: `drop-shadow(0 0 14px ${glow}) drop-shadow(0 0 30px ${hex}35)`,
-                }}
+                style={{ filter: `drop-shadow(0 0 14px ${hex}18)` }}
                 dangerouslySetInnerHTML={{ __html: zoneSvg }}
               />
             </AnimatePresence>
@@ -148,11 +144,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
                 style={{
                   width: 28,
                   height: 87,
-                  filter: [
-                    `drop-shadow(0 0 8px ${hex})`,
-                    `drop-shadow(0 0 16px ${hex}bb)`,
-                    `drop-shadow(0 0 3px ${hex})`,
-                  ].join(" "),
+                  filter: `drop-shadow(${thermGlow})`,
                 }}
                 dangerouslySetInnerHTML={{ __html: thermSvg }}
               />

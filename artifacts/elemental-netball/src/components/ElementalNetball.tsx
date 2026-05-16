@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BibSvg } from "./BibSvg";
-import { CourtZone } from "./CourtZone";
 import { InteractiveCourt } from "./InteractiveCourt";
 import { POSITIONS, getPositionByCode } from "@/data/positions";
 import type { Team } from "@/data/positions";
@@ -212,13 +211,16 @@ export const ElementalNetball: React.FC = () => {
             </div>
 
             {/* ── Court Zone Diagram ── */}
-            <CourtZone
-              posCode={activePos}
-              posName={pos.name}
-              zoneCaption={pos.zoneCaption}
-              accentHex={activeHex}
-              team={activeTeam}
-            />
+            <div
+              className="relative overflow-hidden rounded-2xl border border-border bg-card/50 mx-auto w-full max-w-[300px] aspect-[1/1.8]"
+            >
+              <img
+                src="/assets/svg/White_Court.svg"
+                aria-hidden
+                className="absolute inset-0 w-full h-full pointer-events-none select-none"
+                style={{ objectFit: "fill", opacity: 0.9 }}
+              />
+            </div>
 
             {/* ── Position Details ── */}
             <AnimatePresence mode="wait">
