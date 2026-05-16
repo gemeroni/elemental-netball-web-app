@@ -317,14 +317,14 @@ export const InteractiveCourt: React.FC = () => {
       </div>
       {/* ── Court ── */}
       {/* Width-driven: fixed width, height via aspect-ratio, capped by maxHeight */}
-      <div className="flex-1 flex items-center justify-center px-4 overflow-hidden py-1">
+      <div className="flex-1 flex items-center justify-center px-1 overflow-hidden py-0">
           <div
             ref={courtRef}
             className="relative overflow-hidden flex-shrink-0"
             style={{
               aspectRatio: "1356 / 2600",
-              width: "min(320px, calc(100vw - 32px))",
-              maxHeight: "calc(100dvh - 196px)",
+              width: "min(600px, calc(100vw - 8px))",
+              maxHeight: "calc(100dvh - 170px)",
               background: "#0b0b10",
               boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
               borderRadius: 4,
