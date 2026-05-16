@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ZONE_SVGS, ICE_ZONE_SVGS, courtLinesRaw } from "@/assets/zoneSvgs";
+import { ZONE_SVGS, ICE_ZONE_SVGS } from "@/assets/zoneSvgs";
 
 import redThermRaw    from "@/assets/svg/Red_Thermometer.svg?raw";
 import orangeThermRaw from "@/assets/svg/Orange_Thermometer.svg?raw";
@@ -10,14 +10,13 @@ import tealThermRaw   from "@/assets/svg/Teal_Thermometer.svg?raw";
 import blueThermRaw   from "@/assets/svg/Blue_Thermometer.svg?raw";
 import purpleThermRaw from "@/assets/svg/Purple_Thermometer.svg?raw";
 
-// Inline-safe SVG: strip style block, make outline paths white on dark bg.
+// Strip XML boilerplate only — keep styles + classes intact so:
+//   cls-1 (mercury) retains its elemental colour and receives the outer glow
+//   glass outline paths (no fill) stay black → invisible on dark background
 function processThermSvg(raw: string) {
   return raw
     .replace(/<\?xml[^?]*\?>/g, "")
     .replace(/<!DOCTYPE[^>]*>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<svg /, '<svg fill="white" ')
-    .replace(/\s+class="[^"]*"/g, "")
     .trim();
 }
 
@@ -33,11 +32,6 @@ const HEX_TO_THERM: Record<string, string> = {
   "#663399": processThermSvg(purpleThermRaw),
 };
 
-// Strip XML/DOCTYPE from the court lines SVG once at module load
-const COURT_LINES = courtLinesRaw
-  .replace(/<\?xml[^?]*\?>/g, "")
-  .replace(/<!DOCTYPE[^>]*>/gi, "")
-  .trim();
 
 interface CourtZoneProps {
   posCode: string;
@@ -101,15 +95,13 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
           <div
             className="relative overflow-hidden flex-shrink-0"
             style={{
-              aspectRatio: "356 / 709",
+              aspectRatio: "1356 / 2600",
               width: 120,
               background: "#0c0c12",
               boxShadow: `0 0 0 1px ${hex}20, 0 8px 32px rgba(0,0,0,0.6)`,
             }}
           >
             {/* ── Layer 1: Zone colour fill + bloom glow ──────────── */}
-            {/* Ice zones are the vertical mirror of Fire zones — scaleY(-1) flips  */}
-            {/* the fill to the correct end without needing separate Ice SVG assets. */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={`zone-${posCode}-${team}`}
@@ -125,11 +117,16 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
               />
             </AnimatePresence>
 
-            {/* ── Layer 2: White court lines overlay ──────────────── */}
-            <div
-              className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-              style={{ opacity: 0.75, mixBlendMode: "screen" }}
-              dangerouslySetInnerHTML={{ __html: COURT_LINES }}
+            {/* ── Layer 2: White_Court.svg lines (1:1 geometry match) ── */}
+            <img
+              src="/assets/svg/White_Court.svg"
+              aria-hidden
+              className="absolute inset-0 w-full h-full pointer-events-none select-none"
+              style={{
+                opacity: 0.85,
+                objectFit: "fill",
+                filter: "drop-shadow(0 0 1px rgba(255,255,255,0.6))",
+              }}
             />
           </div>
 
