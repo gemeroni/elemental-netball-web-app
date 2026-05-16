@@ -5,20 +5,42 @@ import { POSITIONS } from "@/data/positions";
 import type { Team } from "@/data/positions";
 import { BibSvg } from "./BibSvg";
 import netballOutlineRaw from "@/assets/svg/Netball_Outline.svg?raw";
+import thermRangeRaw from "@/assets/svg/EN_Thermometer_Range.svg?raw";
+
+// ── SVG pre-processing helpers ────────────────────────────────────────────────
+function stripSvgMeta(raw: string) {
+  return raw
+    .replace(/<\?xml[^?]*\?>/g, "")
+    .replace(/<!DOCTYPE[^>]*>/gi, "")
+    .trim();
+}
+
+function inlineSvg(raw: string) {
+  return stripSvgMeta(raw)
+    // Remove <style> block — class rules bleed globally when inlined.
+    // Every path already carries its visual properties as inline attributes.
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    // Set default SVG fill to white so outline paths (no explicit fill) show
+    // on a dark background; gradient/colour fills are specified inline so unaffected.
+    .replace(/<svg /, '<svg fill="white" ')
+    // Remove remaining class attributes.
+    .replace(/\s+class="[^"]*"/g, "");
+}
 
 // ── Pre-process SVGs once at module load ─────────────────────────────────────
-const COURT_SVG = courtLinesRaw
-  .replace(/<\?xml[^?]*\?>/g, "")
-  .replace(/<!DOCTYPE[^>]*>/gi, "")
-  .trim();
+const COURT_SVG = stripSvgMeta(courtLinesRaw);
 
-const OUTLINE_SVG = netballOutlineRaw
-  .replace(/<\?xml[^?]*\?>/g, "")
-  .replace(/<!DOCTYPE[^>]*>/gi, "")
-  // Strip <style> block — its class rules bleed globally when the SVG is inlined.
-  // All visual properties are already present as inline attributes on each element.
-  .replace(/<style[\s\S]*?<\/style>/gi, "")
-  .trim();
+const OUTLINE_SVG = stripSvgMeta(netballOutlineRaw)
+  .replace(/<style[\s\S]*?<\/style>/gi, "");
+
+// Thermometer range: keep gradient + isolation, remove blend-mode multiply
+// (multiply is a print trick for white bg; our bg is dark so we skip it).
+const THERM_RANGE_SVG = inlineSvg(thermRangeRaw);
+
+// Geometry of EN_Thermometer_Range.svg fill area (in % of total SVG height).
+// Derived from linearGradient y1=621.1 (bottom) y2=87.8 (top) in viewBox 685.26px.
+const THERM_TOP_PCT   = (87.8  / 685.26) * 100; // ≈ 12.8 %
+const THERM_RANGE_PCT = ((621.1 - 87.8) / 685.26) * 100; // ≈ 77.8 %
 
 // ── Token dimensions (px) ────────────────────────────────────────────────────
 // Bibs have a portrait ratio — match the natural bib shape.
@@ -105,32 +127,43 @@ const PlayerToken: React.FC<TokenProps> = ({
     let px = x.get();
     let py = y.get();
 
-    // ── Shooting circle exclusion (WA, WD, C only) ──────────────────────
+    // ── 1. Rectangular zone clamping FIRST ──────────────────────────────
+    // Do this before the circle check so the rect boundary can never
+    // push a token back inside a shooting circle afterwards.
+    px = Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, px));
+    py = Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, py));
+
+    // ── 2. Shooting circle exclusion (WA, WD, C only) ───────────────────
+    // Expand the effective radius by ry so the token's visual top/bottom edge
+    // stays clearly outside the circle line even after the rect clamp above.
     if (CIRCLE_EXCLUDED.has(code)) {
-      const circleR = CIRCLE_R_NORM * courtH;
-      // Circle centres sit on the goal lines at the top and bottom edges.
-      const circles: [number, number][] = [
-        [0.5 * courtW, 0],        // top (attacking end)
-        [0.5 * courtW, courtH],   // bottom (defending end)
-      ];
-      for (const [cx, cy] of circles) {
+      const circleR = CIRCLE_R_NORM * courtH + ry;
+      for (const [cx, cy] of [
+        [0.5 * courtW, 0],       // top goal line
+        [0.5 * courtW, courtH],  // bottom goal line
+      ] as [number, number][]) {
         const dx = px - cx;
         const dy = py - cy;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < circleR) {
-          // Push token radially to the circle boundary.
-          const scale = dist > 0.001 ? circleR / dist : 1;
-          px = cx + dx * scale;
-          py = cy + dy * scale;
-          // If at the exact centre (dist ≈ 0), nudge toward court middle.
-          if (dist <= 0.001) py = cy < courtH / 2 ? cy + circleR : cy - circleR;
+          if (dist > 0.001) {
+            const scale = circleR / dist;
+            px = cx + dx * scale;
+            py = cy + dy * scale;
+          } else {
+            // Exactly at the centre — nudge inward toward mid-court.
+            py = cy < courtH / 2 ? cy + circleR : cy - circleR;
+          }
         }
       }
+      // Final safety re-clamp: circle push can slightly exceed the x bounds
+      // when the token is near the court edge.
+      px = Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, px));
+      py = Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, py));
     }
 
-    // ── Rectangular zone clamping ────────────────────────────────────────
-    x.set(Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, px)));
-    y.set(Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, py)));
+    x.set(px);
+    y.set(py);
   }, [code, zone, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (courtW === 0) return null;
@@ -188,9 +221,12 @@ function heatColor(normY: number): string {
 }
 
 // ── Ball token — spectral heatmap colour + Netball_Outline seam overlay ──────
-const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> = ({
-  courtW, courtH, resetKey,
-}) => {
+const BallToken: React.FC<{
+  courtW: number;
+  courtH: number;
+  resetKey: number;
+  onNormYChange: (normY: number) => void;
+}> = ({ courtW, courtH, resetKey, onNormYChange }) => {
   const x = useMotionValue(0.5 * courtW);
   const y = useMotionValue(0.5 * courtH);
   const [color, setColor] = useState(() => heatColor(0.5));
@@ -199,11 +235,16 @@ const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> 
     x.set(0.5 * courtW);
     y.set(0.5 * courtH);
     setColor(heatColor(0.5));
+    onNormYChange(0.5);
   }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    return y.on("change", (v) => setColor(heatColor(courtH > 0 ? v / courtH : 0.5)));
-  }, [y, courtH]);
+    return y.on("change", (v) => {
+      const normY = courtH > 0 ? v / courtH : 0.5;
+      setColor(heatColor(normY));
+      onNormYChange(normY);
+    });
+  }, [y, courtH, onNormYChange]);
 
   if (courtW === 0) return null;
 
@@ -251,6 +292,7 @@ export const InteractiveCourt: React.FC = () => {
   const courtRef = useRef<HTMLDivElement>(null);
   const [courtSize, setCourtSize] = useState({ w: 0, h: 0 });
   const [resetKey, setResetKey] = useState(0);
+  const [ballNormY, setBallNormY] = useState(0.5);
 
   useEffect(() => {
     const el = courtRef.current;
@@ -262,6 +304,8 @@ export const InteractiveCourt: React.FC = () => {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  const handleBallNormY = useCallback((v: number) => setBallNormY(v), []);
 
   return (
     <div className="flex flex-col h-full select-none">
@@ -289,14 +333,17 @@ export const InteractiveCourt: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Court ── */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      {/* ── Court + Thermometer ── */}
+      <div className="flex-1 flex items-center justify-center px-3">
+        <div className="flex items-stretch gap-2.5">
+
+        {/* Court */}
         <div
           ref={courtRef}
-          className="relative overflow-hidden w-full"
+          className="relative overflow-hidden"
           style={{
             aspectRatio: "356 / 709",
-            maxWidth: 300,
+            width: "min(250px, calc(100vw - 76px))",
             maxHeight: "calc(100dvh - 220px)",
             background: "#0b0b10",
             boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
@@ -357,10 +404,48 @@ export const InteractiveCourt: React.FC = () => {
           ))}
 
           {/* Ball */}
-          <BallToken courtW={courtSize.w} courtH={courtSize.h} resetKey={resetKey} />
+          <BallToken
+            courtW={courtSize.w}
+            courtH={courtSize.h}
+            resetKey={resetKey}
+            onNormYChange={handleBallNormY}
+          />
 
+        </div>{/* /court */}
+
+        {/* ── Elemental Thermometer Range ── */}
+        <div className="relative self-stretch flex-shrink-0" style={{ width: 30 }}>
+          {/* Gradient thermometer SVG — fills full height of the column */}
+          <div
+            className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+            dangerouslySetInnerHTML={{ __html: THERM_RANGE_SVG }}
+          />
+
+          {/* Labels */}
+          <div className="absolute inset-x-0 top-0 flex justify-center pointer-events-none"
+            style={{ top: `${THERM_TOP_PCT - 8}%` }}>
+            <span className="text-[7px] font-black text-white/40 leading-none">🔥</span>
+          </div>
+          <div className="absolute inset-x-0 flex justify-center pointer-events-none"
+            style={{ top: `${THERM_TOP_PCT + THERM_RANGE_PCT + 2}%` }}>
+            <span className="text-[7px] font-black text-white/40 leading-none">❄</span>
+          </div>
+
+          {/* Live ball-position indicator */}
+          <div
+            className="absolute left-1/2 w-3 h-3 rounded-full border border-white/50 pointer-events-none"
+            style={{
+              top: `${THERM_TOP_PCT + ballNormY * THERM_RANGE_PCT}%`,
+              transform: "translate(-50%, -50%)",
+              background: heatColor(ballNormY),
+              boxShadow: `0 0 10px 4px ${heatColor(ballNormY)}99, 0 0 0 1px ${heatColor(ballNormY)}`,
+              transition: "top 80ms linear, background 80ms linear, box-shadow 80ms linear",
+            }}
+          />
         </div>
-      </div>
+
+        </div>{/* /flex row */}
+      </div>{/* /flex-1 */}
 
       {/* ── Hint ── */}
       <p className="text-center text-[11px] font-semibold text-white/30 pb-4 pt-2 px-4">
