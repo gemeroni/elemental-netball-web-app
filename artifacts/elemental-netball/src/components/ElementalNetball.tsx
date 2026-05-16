@@ -30,10 +30,10 @@ export const ElementalNetball: React.FC = () => {
       <header className="sticky top-0 z-30 bg-[#111] border-b border-border">
         <div className="flex items-center justify-between px-4 py-3 gap-3">
           <div className="min-w-0">
-            <h1 className="text-base font-black uppercase tracking-tight text-white leading-none">
+            <h1 className="text-lg font-black uppercase tracking-tight text-white leading-none">
               Elemental <span className="text-primary">Netball</span>
             </h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">
               Position Logic
             </p>
           </div>
@@ -42,7 +42,7 @@ export const ElementalNetball: React.FC = () => {
           <div className="flex rounded-lg overflow-hidden border border-white/15 flex-shrink-0">
             <button
               onClick={() => setActiveTeam("Fire")}
-              className={`px-3 py-2 text-[11px] font-black uppercase tracking-wider transition-all duration-200 ${
+              className={`px-3 py-2 text-xs font-black uppercase tracking-wider transition-all duration-200 ${
                 isFire
                   ? "bg-[#E53935] text-white"
                   : "bg-transparent text-muted-foreground hover:text-white"
@@ -53,7 +53,7 @@ export const ElementalNetball: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTeam("Ice")}
-              className={`px-3 py-2 text-[11px] font-black uppercase tracking-wider transition-all duration-200 ${
+              className={`px-3 py-2 text-xs font-black uppercase tracking-wider transition-all duration-200 ${
                 !isFire
                   ? "bg-[#1E88E5] text-white"
                   : "bg-transparent text-muted-foreground hover:text-white"
@@ -90,7 +90,7 @@ export const ElementalNetball: React.FC = () => {
                   <BibSvg code={leftCode} team={leftTeam} />
                 </div>
                 <span
-                  className="text-[9px] uppercase tracking-widest font-black"
+                  className="text-[11px] uppercase tracking-widest font-black"
                   style={{ color: activeHex }}
                 >
                   {leftTeam}
@@ -100,15 +100,15 @@ export const ElementalNetball: React.FC = () => {
               {/* Centre: position name + tagline + vs */}
               <div className="flex-1 text-center min-w-0">
                 <p
-                  className="text-[10px] uppercase tracking-widest font-black mb-0.5"
+                  className="text-xs uppercase tracking-widest font-black mb-0.5"
                   style={{ color: activeHex }}
                 >
                   {pos.code}
                 </p>
-                <h2 className="font-black text-base uppercase tracking-tight text-white leading-tight">
+                <h2 className="font-black text-lg uppercase tracking-tight text-white leading-tight">
                   {pos.name}
                 </h2>
-                <p className="text-[11px] italic text-muted-foreground mb-2">
+                <p className="text-xs italic text-muted-foreground mb-2">
                   {pos.tagline}
                 </p>
                 <div className="flex items-center justify-center gap-2 mb-2">
@@ -116,7 +116,7 @@ export const ElementalNetball: React.FC = () => {
                     className="h-px flex-1 opacity-30"
                     style={{ backgroundColor: activeHex }}
                   />
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                  <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider">
                     vs
                   </span>
                   <div
@@ -124,10 +124,10 @@ export const ElementalNetball: React.FC = () => {
                     style={{ backgroundColor: rightHex }}
                   />
                 </div>
-                <p className="text-xs font-bold text-muted-foreground">
+                <p className="text-sm font-bold text-muted-foreground">
                   {opponent.name}
                 </p>
-                <p className="text-[10px] italic text-muted-foreground/70">
+                <p className="text-xs italic text-muted-foreground/70">
                   {opponent.tagline}
                 </p>
               </div>
@@ -138,7 +138,7 @@ export const ElementalNetball: React.FC = () => {
                   <BibSvg code={rightCode} team={rightTeam} />
                 </div>
                 <span
-                  className="text-[9px] uppercase tracking-widest font-black"
+                  className="text-[11px] uppercase tracking-widest font-black"
                   style={{ color: rightHex }}
                 >
                   {rightTeam}
@@ -150,7 +150,7 @@ export const ElementalNetball: React.FC = () => {
 
         {/* ── Bib Selector ─────────────────────────────────── */}
         <div className="bg-background border-b border-border px-3 py-3">
-          <p className="text-[9px] uppercase tracking-widest font-black text-muted-foreground text-center mb-2">
+          <p className="text-[11px] uppercase tracking-widest font-black text-muted-foreground text-center mb-2">
             {activeTeam} Team — tap a position
           </p>
           <div className="flex justify-around items-end">
@@ -179,7 +179,7 @@ export const ElementalNetball: React.FC = () => {
                     <BibSvg code={p.code} team={activeTeam} />
                   </motion.div>
                   <span
-                    className="text-[9px] font-black uppercase tracking-wide transition-all"
+                    className="text-[11px] font-black uppercase tracking-wide transition-all"
                     style={{ color: isActive ? hex : "transparent" }}
                   >
                     {p.code}
@@ -210,20 +210,20 @@ export const ElementalNetball: React.FC = () => {
           >
             {/* Role */}
             <section className="bg-card rounded-2xl border border-border p-4">
-              <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+              <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">
                 Role
               </h3>
-              <p className="text-sm text-foreground leading-relaxed">
+              <p className="text-base text-foreground leading-relaxed">
                 {pos.role}
               </p>
             </section>
 
             {/* Note */}
             <section className="bg-card rounded-2xl border border-border p-4">
-              <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
+              <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">
                 Note
               </h3>
-              <p className="text-sm text-foreground leading-relaxed">
+              <p className="text-base text-foreground leading-relaxed">
                 {pos.note}
               </p>
             </section>
@@ -239,14 +239,14 @@ export const ElementalNetball: React.FC = () => {
               }}
             >
               <h3
-                className="text-[10px] uppercase tracking-widest font-black mb-2"
+                className="text-xs uppercase tracking-widest font-black mb-2"
                 style={{ color: activeHex }}
               >
                 {pos.code === pos.matchup
                   ? "The Centre Battle"
                   : `Matchup · ${pos.code} vs ${pos.matchup}`}
               </h3>
-              <p className="text-sm text-foreground leading-relaxed">
+              <p className="text-base text-foreground leading-relaxed">
                 {pos.matchupDescription}
               </p>
             </section>
