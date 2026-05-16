@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence, useMotionValue } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, animate } from "framer-motion";
 import { POSITIONS } from "@/data/positions";
 import type { Team } from "@/data/positions";
 import { BibSvg } from "./BibSvg";
@@ -118,15 +118,15 @@ const PlayerToken: React.FC<TokenProps> = ({
   const y = useMotionValue(initNorm[1] * courtH);
 
   useEffect(() => {
-    x.set(initNorm[0] * courtW);
-    y.set(initNorm[1] * courtH);
+    animate(x, initNorm[0] * courtW, { type: "spring", stiffness: 400, damping: 30 });
+    animate(y, initNorm[1] * courtH, { type: "spring", stiffness: 400, damping: 30 });
   }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const clamp = useCallback(() => {
+  // Compute the nearest valid position inside the zone (and outside shooting circles).
+  const computeClamped = useCallback((px: number, py: number): [number, number] => {
     const rx = BIB_W / 2, ry = BIB_H / 2;
-    let px = x.get(), py = y.get();
 
-    // 1 — rectangular zone clamp first
+    // 1 — rectangular zone clamp
     px = Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, px));
     py = Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, py));
 
@@ -146,8 +146,15 @@ const PlayerToken: React.FC<TokenProps> = ({
       py = Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, py));
     }
 
-    x.set(px); y.set(py);
+    return [px, py];
   }, [code, zone, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // On release: spring-snap to the border exit point if out of bounds.
+  const snapBack = useCallback(() => {
+    const [px, py] = computeClamped(x.get(), y.get());
+    animate(x, px, { type: "spring", stiffness: 500, damping: 35 });
+    animate(y, py, { type: "spring", stiffness: 500, damping: 35 });
+  }, [computeClamped, x, y]);
 
   if (courtW === 0) return null;
 
@@ -156,7 +163,7 @@ const PlayerToken: React.FC<TokenProps> = ({
       data-bib="true"
       drag
       dragMomentum={false}
-      onDrag={clamp}
+      onDragEnd={snapBack}
       onTap={() => onSelect()}
       whileDrag={{ scale: 1.2, zIndex: 50 }}
       animate={{ scale: isSelected ? 1.18 : 1 }}
