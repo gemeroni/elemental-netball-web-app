@@ -38,7 +38,7 @@ export const ElementalNetball: React.FC = () => {
               Elemental <span className="text-primary">Netball</span>
             </h1>
             <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">
-              Position Logic
+              Interactive Game Basics
             </p>
           </div>
 
@@ -128,41 +128,48 @@ export const ElementalNetball: React.FC = () => {
                   className="absolute inset-0 opacity-5 pointer-events-none"
                   style={{ background: `linear-gradient(135deg, ${activeHex}, transparent 60%)` }}
                 />
-                <div className="relative flex items-center gap-3">
+                {/* Position name + tagline centred at top */}
+                <div className="relative text-center mb-2">
+                  <p className="text-[11px] uppercase tracking-widest font-black mb-0.5" style={{ color: activeHex }}>
+                    {pos.code}
+                  </p>
+                  <h2 className="font-black text-lg uppercase tracking-tight text-white leading-tight">
+                    {pos.name}
+                  </h2>
+                  <p className="text-xs italic text-muted-foreground">{pos.tagline}</p>
+                </div>
+
+                {/* Bibs aligned with vs divider */}
+                <div className="relative flex items-center gap-2">
                   <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                    <div className="w-14 h-[68px]">
+                    <div className="w-12 h-[58px]">
                       <BibSvg code={leftCode} team={leftTeam} />
                     </div>
-                    <span className="text-[11px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
+                    <span className="text-[10px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
                       {leftTeam}
                     </span>
                   </div>
 
-                  <div className="flex-1 text-center min-w-0">
-                    <p className="text-xs uppercase tracking-widest font-black mb-0.5" style={{ color: activeHex }}>
-                      {pos.code}
-                    </p>
-                    <h2 className="font-black text-lg uppercase tracking-tight text-white leading-tight">
-                      {pos.name}
-                    </h2>
-                    <p className="text-xs italic text-muted-foreground mb-2">{pos.tagline}</p>
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="h-px flex-1 opacity-30" style={{ backgroundColor: activeHex }} />
-                      <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider">vs</span>
-                      <div className="h-px flex-1 opacity-30" style={{ backgroundColor: rightHex }} />
-                    </div>
-                    <p className="text-sm font-bold text-muted-foreground">{opponent.name}</p>
-                    <p className="text-xs italic text-muted-foreground/70">{opponent.tagline}</p>
+                  <div className="flex-1 flex items-center gap-2 min-w-0">
+                    <div className="h-px flex-1 opacity-30" style={{ backgroundColor: activeHex }} />
+                    <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider">vs</span>
+                    <div className="h-px flex-1 opacity-30" style={{ backgroundColor: rightHex }} />
                   </div>
 
                   <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                    <div className="w-14 h-[68px] opacity-80">
+                    <div className="w-12 h-[58px] opacity-80">
                       <BibSvg code={rightCode} team={rightTeam} />
                     </div>
-                    <span className="text-[11px] uppercase tracking-widest font-black" style={{ color: rightHex }}>
+                    <span className="text-[10px] uppercase tracking-widest font-black" style={{ color: rightHex }}>
                       {rightTeam}
                     </span>
                   </div>
+                </div>
+
+                {/* Opponent name + tagline centred at bottom */}
+                <div className="relative text-center mt-2">
+                  <p className="text-sm font-bold text-muted-foreground">{opponent.name}</p>
+                  <p className="text-xs italic text-muted-foreground/70">{opponent.tagline}</p>
                 </div>
               </motion.div>
             </AnimatePresence>
