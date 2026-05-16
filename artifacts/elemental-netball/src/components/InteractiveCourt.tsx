@@ -315,6 +315,56 @@ export const InteractiveCourt: React.FC = () => {
           <span className="text-[20px]">🧊</span>
         </div>
       </div>
+      {/* ── Info bar ── */}
+      <div
+        className="flex-shrink-0 px-4 py-2 min-h-[54px] flex items-center"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <AnimatePresence mode="wait">
+          {selectedPos && selectedHex ? (
+            <motion.div
+              key={`sel-${selected!.code}-${selected!.team}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-3 w-full"
+            >
+              <div className="flex-shrink-0 w-7 h-9">
+                <BibSvg code={selectedPos.code} team={selected!.team} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-[12px] font-black leading-tight truncate"
+                  style={{ color: selectedHex }}
+                >
+                  {selected!.team} · {selectedPos.name}
+                </p>
+                <p className="text-[10px] text-white/45 leading-snug mt-0.5 line-clamp-2">
+                  {selectedPos.zoneCaption}
+                </p>
+              </div>
+              <button
+                onClick={handleDeselect}
+                className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-white/50 text-[11px] flex items-center justify-center transition-colors"
+              >
+                ✕
+              </button>
+            </motion.div>
+          ) : (
+            <motion.p
+              key="hint"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-[11px] font-semibold text-white/30 text-center w-full leading-snug"
+            >
+              Tap a player to learn their zone · drag to move
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
       {/* ── Court ── */}
       {/* Width-driven: fixed width, height via aspect-ratio, capped by maxHeight */}
       <div className="flex-1 flex items-center justify-center px-1 overflow-hidden py-0">
@@ -323,8 +373,8 @@ export const InteractiveCourt: React.FC = () => {
             className="relative overflow-hidden flex-shrink-0"
             style={{
               aspectRatio: "1356 / 2600",
-              width: "min(600px, calc(100vw - 8px))",
-              maxHeight: "calc(100dvh - 170px)",
+              width: "min(460px, calc(100vw - 8px))",
+              maxHeight: "calc(100dvh - 220px)",
               background: "#0b0b10",
               boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
               borderRadius: 4,
@@ -389,56 +439,6 @@ export const InteractiveCourt: React.FC = () => {
               resetKey={resetKey}
             />
           </div>
-      </div>
-      {/* ── Info bar ── */}
-      <div
-        className="flex-shrink-0 px-4 py-2 min-h-[54px] flex items-center"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-      >
-        <AnimatePresence mode="wait">
-          {selectedPos && selectedHex ? (
-            <motion.div
-              key={`sel-${selected!.code}-${selected!.team}`}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center gap-3 w-full"
-            >
-              <div className="flex-shrink-0 w-7 h-9">
-                <BibSvg code={selectedPos.code} team={selected!.team} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-[12px] font-black leading-tight truncate"
-                  style={{ color: selectedHex }}
-                >
-                  {selected!.team} · {selectedPos.name}
-                </p>
-                <p className="text-[10px] text-white/45 leading-snug mt-0.5 line-clamp-2">
-                  {selectedPos.zoneCaption}
-                </p>
-              </div>
-              <button
-                onClick={handleDeselect}
-                className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-white/50 text-[11px] flex items-center justify-center transition-colors"
-              >
-                ✕
-              </button>
-            </motion.div>
-          ) : (
-            <motion.p
-              key="hint"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="text-[11px] font-semibold text-white/30 text-center w-full leading-snug"
-            >
-              Tap a player to learn their zone · drag to move
-            </motion.p>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
