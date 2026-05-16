@@ -10,15 +10,41 @@ import tealThermRaw   from "@/assets/svg/Teal_Thermometer.svg?raw";
 import blueThermRaw   from "@/assets/svg/Blue_Thermometer.svg?raw";
 import purpleThermRaw from "@/assets/svg/Purple_Thermometer.svg?raw";
 
-// Inline-safe SVG: strip style block, make outline paths white on dark bg.
+// Inline-safe SVG: strip style block, make glass paths white, glow mercury only.
+// Mercury paths are identified by fill-rule="evenodd" (always present as inline
+// attribute on the coloured fill shape). Glass paths have no inline fill and
+// inherit white from the SVG root. The glow filter is scoped to mercury via
+// filter="url(#mg)" so the glass container gets zero glow.
 function processThermSvg(raw: string) {
-  return raw
+  // Glow: blur the source graphic (retains mercury colour), merge 2× blur + original
+  const glowFilter =
+    `<filter id="mg" x="-80%" y="-80%" width="260%" height="260%">` +
+    `<feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="b"/>` +
+    `<feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>` +
+    `</filter>`;
+
+  let svg = raw
     .replace(/<\?xml[^?]*\?>/g, "")
     .replace(/<!DOCTYPE[^>]*>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<svg /, '<svg fill="white" ')
     .replace(/\s+class="[^"]*"/g, "")
+    .replace(/<svg /, '<svg fill="white" ')
     .trim();
+
+  // Inject glow filter into existing (now-empty) <defs>, or create one
+  if (svg.includes("<defs>")) {
+    svg = svg.replace("<defs>", `<defs>${glowFilter}`);
+  } else {
+    svg = svg.replace(/(<svg[^>]*>)/, `$1<defs>${glowFilter}</defs>`);
+  }
+
+  // Apply glow filter to mercury paths only — they always carry fill-rule="evenodd"
+  svg = svg.replace(
+    /(<path\b(?=[^>]*fill-rule="evenodd")[^>]*?)(\/?>)/g,
+    '$1 filter="url(#mg)"$2'
+  );
+
+  return svg;
 }
 
 // Map each position accentHex → pre-processed thermometer SVG.
@@ -145,15 +171,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
             >
               <div
                 className="[&>svg]:block"
-                style={{
-                  width: 28,
-                  height: 87,
-                  filter: [
-                    `drop-shadow(0 0 8px ${hex})`,
-                    `drop-shadow(0 0 16px ${hex}bb)`,
-                    `drop-shadow(0 0 3px ${hex})`,
-                  ].join(" "),
-                }}
+                style={{ width: 28, height: 87 }}
                 dangerouslySetInnerHTML={{ __html: thermSvg }}
               />
             </motion.div>
