@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elemental Netball</title>
+  <link rel="stylesheet" href="https://use.typekit.net/ofs4pze.css">
+  <style>
+/* ── Colour Temperature Position Logic — stylesheet ────────────────────────
+   Edit this file to change layout, colours, spacing, and typography.
+   Save, then refresh the browser tab to see changes.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Variables (change colours here) ──────────────────────────────────────── */
+:root {
+  --GS: #E53935;
+  --GA: #F4511E;
+  --WA: #FB8C00;
+  --C:  #43A047;
+  --WD: #00838F;
+  --GD: #1E88E5;
+  --GK: #8E24AA;
+
+  --fire: #E53935;
+  --ice:  #1E88E5;
+
+  --bg:   #F2F2F2;   /* page background */
+  --card: #FFFFFF;   /* card background */
+  --text: #1A1A1A;   /* primary text */
+  --sub:  #666666;   /* secondary text */
+  --rule: #E0E0E0;   /* dividers / borders */
+
+  /* Court SVG rendered dimensions. Bib columns and thermometer match the
+     height so all three vertical elements line up. The width is derived
+     from the viewBox aspect (272 = 540 × 356.56 / 709.66). */
+  --court-h: 600px;
+  --court-w: 300px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'gamay', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header {
+  background: #1A1A1A;
+}
+.header-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 24px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+.header-title h1 {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: white;
+}
+.header-title h1 span { color: #43A047; }
+.header-title p {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+.header-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* ── HOT / COLD toggle ───────────────────────────────────────────────────── */
+.global-toggle {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #333;
+}
+.team-btn {
+  padding: 10px 0;
+  width: 130px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-family: 'gamay', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  border: none;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.25s;
+  position: relative;
+}
+.team-btn.fire.active {
+  background: var(--fire);
+  color: white;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.25),
+    0 0 0 2px rgba(255,107,53,0.55),
+    0 0 16px rgba(255,107,53,0.75),
+    0 0 32px rgba(255,107,53,0.45);
+  animation: ignite 1.6s ease-in-out infinite;
+}
+.team-btn.ice.active {
+  background: var(--ice);
+  color: white;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.3),
+    0 0 0 2px rgba(124,193,224,0.6),
+    0 0 14px rgba(124,193,224,0.7),
+    0 0 28px rgba(184,229,245,0.45);
+  animation: frost 2.2s ease-in-out infinite;
+}
+@keyframes ignite {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,0.25),
+      0 0 0 2px rgba(255,107,53,0.55),
+      0 0 16px rgba(255,107,53,0.75),
+      0 0 32px rgba(255,107,53,0.45);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,0.45),
+      0 0 0 3px rgba(255,165,0,0.7),
+      0 0 22px rgba(255,107,53,0.95),
+      0 0 44px rgba(255,150,40,0.55);
+  }
+}
+@keyframes frost {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,0.3),
+      0 0 0 2px rgba(124,193,224,0.6),
+      0 0 14px rgba(124,193,224,0.7),
+      0 0 28px rgba(184,229,245,0.45);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,0.55),
+      0 0 0 3px rgba(184,229,245,0.85),
+      0 0 20px rgba(184,229,245,0.95),
+      0 0 40px rgba(224,244,251,0.6);
+  }
+}
+.team-btn:not(.active):hover { background: #2a2a2a; color: #ccc; }
+
+/* ── Matchup band (self | toggle | opp) ─────────────────────────────────── */
+.matchup-band {
+  background: var(--card);
+  border-bottom: 1px solid var(--rule);
+}
+/* Padding mirrors zones-layout's outer padding so self/opp block edges
+   line up with the bib-col / info-col edges in the diagram below. */
+.matchup-band-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 26px 28px 22px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: end;
+}
+.matchup-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform-origin: top center;
+}
+/* Sides are FIXED: fire on the left, ice on the right. They never swap. */
+.matchup-side.fire-side { align-items: flex-start; }
+.matchup-side.ice-side  { align-items: flex-end; }
+.matchup-side.ice-side .matchup-text { text-align: right; }
+
+/* Both sides stay full-strength regardless of which team is active - the
+   active state is conveyed by the central toggle's ignite/frost effect. */
+
+/* Team toggle: centred horizontally between the two sides, vertically nudged
+   down toward the bottom of the band. */
+.matchup-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 6px;
+  padding-top: 56px;
+}
+
+.intent-pill {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 7px 18px;
+  border-radius: 20px;
+  background: var(--card);
+  display: inline-block;
+}
+.matchup-side.fire-side .intent-pill {
+  color: var(--fire);
+  border: 2px solid var(--fire);
+  filter: url(#fire-border);
+}
+.matchup-side.ice-side .intent-pill {
+  color: var(--ice);
+  border: 2px solid var(--ice);
+  filter: url(#frost-border);
+}
+
+.matchup-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.big-bib {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+.matchup-text { line-height: 1.25; }
+.team-role {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  margin-bottom: 5px;
+}
+.matchup-side.fire-side .team-role { color: var(--fire); }
+.matchup-side.ice-side  .team-role { color: var(--ice);  }
+.pos-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.pos-tagline {
+  font-size: 14px;
+  color: var(--sub);
+  font-style: italic;
+}
+
+/* ── Bib selector rows (horizontal, above & below the landscape court) ──── */
+/* Width matches the landscape court so bibs distribute evenly across. */
+.bib-col {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 600px;
+  padding: 0 16px;
+  justify-self: center;
+}
+.pos-tab {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.4;
+  border-radius: 8px;
+  outline: none;
+}
+.pos-tab img {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+/* Active team's bibs read in full colour; only the opposing-team column
+   stays muted so the eye knows where the ball is. */
+body.team-active-fire .fire-tab,
+body.team-active-ice  .ice-tab { opacity: 1; }
+.pos-tab.opp-match { opacity: 0.85; }
+.pos-tab:hover { opacity: 1; }
+
+/* Selected position: scaled up + team-coloured halo on top of full opacity */
+.pos-tab.active { transform: scale(1.32); }
+body.team-active-fire .pos-tab.active {
+  filter:
+    drop-shadow(0 0 14px rgba(229,57,53,0.65))
+    drop-shadow(0 3px 8px rgba(0,0,0,0.3));
+}
+body.team-active-ice .pos-tab.active {
+  filter:
+    drop-shadow(0 0 14px rgba(30,136,229,0.65))
+    drop-shadow(0 3px 8px rgba(0,0,0,0.3));
+}
+
+/* ── Inline position bib (used in info text) ────────────────────────────── */
+.inline-bib {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
+}
+
+.pos-tab { outline: none; }
+
+/* ── View toggle (now lives inside header on the right) ─────────────────── */
+.view-toggle {
+  display: flex;
+  gap: 0;
+}
+.view-btn {
+  padding: 4px 14px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'gamay', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  border: none;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.view-btn.active {
+  color: white;
+  border-bottom-color: #43A047;
+}
+.view-btn:not(.active):hover { color: #aaa; }
+
+/* ── View panels ─────────────────────────────────────────────────────────── */
+.view-panel { display: none; }
+.view-panel.active { display: block; }
+
+/* ── Section label ───────────────────────────────────────────────────────── */
+.section-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--sub);
+  padding: 20px 20px 0;
+}
+
+/* ── Section 1: zones layout ─────────────────────────────────────────────── */
+/* 3 rows × 3 cols. Fire bibs sit above the landscape court, ice bibs below.
+   Thermometer and info-col stack to the right of the court block. */
+.zones-layout {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 28px 32px;
+  display: grid;
+  grid-template-columns: 880px;
+  grid-template-rows: auto auto auto auto auto;
+  grid-template-areas:
+    "details"
+    "fire"
+    "court"
+    "ice"
+    "matchup";
+  row-gap: 18px;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+}
+.zones-layout > .pos-details      { grid-area: details; width: 100%; }
+.zones-layout > .bib-col.fire-col { grid-area: fire; }
+.zones-layout > .zone-col         { grid-area: court; }
+.zones-layout > .bib-col.ice-col  { grid-area: ice; }
+.zones-layout > .opponent-section { grid-area: matchup; width: 100%; }
+
+/* Thermometer: flat tube + smooth outline + subtle drop-shadow on slider.
+   Motion effects and tube-edge filters are intentionally disabled - team
+   activity is now conveyed by the central toggle's ignite/frost glow. */
+.motion-boil, .motion-freeze { display: none; }
+
+#thermo-slider {
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+}
+.thermo-ticks { pointer-events: none; }
+#thermo-mercury { transition: y 0.2s, height 0.2s, fill 0.2s; }
+
+/* ── Section 2: ball tracker ─────────────────────────────────────────────── */
+.tracker-section {
+  background: #1a1a1a;
+  padding: 32px 20px 40px;
+  margin-top: 32px;
+}
+.tracker-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.tracker-header h2 {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: white;
+  margin-bottom: 6px;
+}
+.tracker-header p {
+  font-size: 12px;
+  color: #555;
+  letter-spacing: 0.2px;
+}
+.tracker-layout {
+  max-width: 340px;
+  margin: 0 auto;
+}
+#tracker-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  overflow: visible;
+}
+.player-token {
+  cursor: grab;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
+}
+#tracker-ball {
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+}
+
+/* Court tools (rotate / flip / snapshot) - small icon row above the court */
+.court-tools {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 0 10px;
+}
+.court-tool {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rule);
+  background: white;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.court-tool:hover {
+  background: #F5F5F5;
+  border-color: #C0C0C0;
+}
+.court-tool:active { background: #E8E8E8; }
+
+/* Court SVG rotates/flips around centre via JS-set inline transform */
+#court-svg {
+  transform-origin: center center;
+  transition: transform 0.3s ease;
+}
+
+/* Mobile-only "tap to interact" lock — prevents accidental token drags
+   while page is being scrolled. Activated via .court-locked class on .zone-col;
+   tapping the frame removes the class and enables interactions. */
+.court-lock-hint {
+  display: none;
+}
+.zone-col.court-locked {
+  cursor: pointer;
+}
+.zone-col.court-locked #court-svg {
+  pointer-events: none;
+}
+.zone-col.court-locked .court-tools {
+  pointer-events: auto;
+}
+.zone-col.court-locked .court-lock-hint {
+  display: block;
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(26, 26, 26, 0.85);
+  color: white;
+  padding: 7px 16px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 4;
+  animation: court-lock-pulse 2s ease-in-out infinite;
+}
+@keyframes court-lock-pulse {
+  0%, 100% { opacity: 0.85; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scale(1.04); }
+}
+
+/* ── Left column: thermometer + court side by side ───────────────────────── */
+.left-col {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* ── Thermometer SVG ─────────────────────────────────────────────────────── */
+/* Hidden for now — markup + JS retained for easy revival. */
+#thermo-svg {
+  display: none;
+}
+.thermo-ball {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.thermo-ball:not(.active) { opacity: 0.5; }
+.thermo-ball:hover:not(.active) { opacity: 0.85; }
+.thermo-ball .active-ring { display: none; }
+.thermo-ball.active .active-ring { display: block; }
+
+/* ── Court zone diagram ──────────────────────────────────────────────────── */
+/* Zone-col sizes to its content (the court + even whitespace around it) so
+   the caption below wraps to that width instead of stretching the frame.
+   In landscape mode (90° / 270° rotation) the frame swaps aspect to
+   accommodate the rotated visual (540 × 271 instead of 272 × 540). */
+.zone-col {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--rule);
+  flex: 0 0 auto;
+  overflow: hidden;
+  position: relative;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+.zone-col.landscape {
+  width: 632px;             /* 600 visual + 16 padding × 2 */
+  height: 358px;            /* 8 top pad + 42 tools row + 300 court visual + 8 bottom pad */
+  padding: 8px 16px;
+}
+.zone-col.landscape #court-svg {
+  position: absolute;
+  top: calc(50% + 21px);    /* shifts visual centre below the tools row at top */
+  left: 50%;
+  margin: 0;
+  /* JS sets transform: translate(-50%, -50%) rotate(R) scaleX(SX) scaleY(SY)
+     so the rotated visual is centred within the resized frame. */
+}
+.zone-col.landscape .zone-caption {
+  display: none;
+}
+#court-svg {
+  width: var(--court-w);
+  height: var(--court-h);
+  display: block;
+  margin: 0 auto;
+  border-radius: 6px;
+  overflow: visible;
+}
+
+.zone-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 10px;
+}
+/* Caption wraps to the court width rather than stretching the card */
+.zone-caption {
+  font-size: 14px;
+  color: var(--sub);
+  line-height: 1.5;
+  margin: 14px auto 0;
+  text-align: center;
+  max-width: 272px;
+}
+
+/* ── Info column (right) ─────────────────────────────────────────────────── */
+.info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Role / Zone / Note rows */
+.pos-details {
+  background: var(--card);
+  padding: 4px 28px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+}
+.detail-row {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #444;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row strong {
+  color: var(--text);
+  font-weight: 700;
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+
+/* Opponent block - colour flips based on which team is the opponent */
+.opponent-section {
+  border-radius: 12px;
+  padding: 18px 28px 22px;
+}
+.opponent-section.opp-ice {
+  background: #EEF4FB;
+  border: 1px solid #C5D9EF;
+  border-left: 4px solid var(--ice);
+}
+.opponent-section.opp-ice .opponent-heading { color: var(--ice); }
+.opponent-section.opp-fire {
+  background: #FFF1EE;
+  border: 1px solid #F4C5B0;
+  border-left: 4px solid var(--fire);
+}
+.opponent-section.opp-fire .opponent-heading { color: var(--fire); }
+.opponent-heading {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+#matchup-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #444;
+  margin-top: 4px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 28px 20px 32px;
+}
+.footer-tag {
+  font-size: 14px;
+  color: #888;
+  font-style: italic;
+  letter-spacing: 0.3px;
+}
+.footer-sig {
+  font-size: 14px;
+  color: #555;
+  margin-top: 8px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+
+</style>
+  <script>
+/* Edit position data here. Save and refresh the browser tab to see changes.
+   Use {CODE} in text fields to insert an inline position badge icon, e.g. {GS} or {GK}. */
+const POSITIONS_DATA = {
+  "order": ["GS", "GA", "WA", "C", "WD", "GD", "GK"],
+  "positions": {
+    "GS": {
+      "name": "Goal Shooter",
+      "colour": "#CC3333",
+      "temp": "attack",
+      "tagline": "the team's top scorer",
+      "role": "Lead strongly into space, hold position inside the goal circle, and use sharp footwork to outwit the defender and convert shots at goal.",
+      "zone": "Attacking Goal Third only - including inside the goal circle.",
+      "zoneCaption": "GS can play in the attacking Goal Third only, including inside the goal circle.",
+      "note": "Works closely with {GA}. One of only two positions allowed to shoot for goal.",
+      "opponent": "GK",
+      "matchup": "{GS} works to get into the goal circle, hold space, and convert. {GK} is the last barrier - contesting every lead into the circle, pressuring every shot, and fighting for the rebound. {GS} wins by getting free inside the circle; {GK} wins by taking that space away."
+    },
+    "GA": {
+      "name": "Goal Attack",
+      "colour": "#FF6633",
+      "temp": "attack",
+      "tagline": "creator and scorer",
+      "role": "Link the midcourt with the goal circle, team up with {GS}, connect {C} and {WA} to the attack, and chase every rebound off the post.",
+      "zone": "Centre Third and attacking Goal Third - including inside the goal circle.",
+      "zoneCaption": "GA can play in the Centre Third and attacking Goal Third, including inside the goal circle.",
+      "note": "One of only two positions allowed to shoot for goal. Needs to be quick and tactically clever.",
+      "opponent": "GD",
+      "matchup": "{GA} is both a creator and a shooter - linking midcourt to the goal circle and teaming up with {GS}. {GD} tracks {GA} everywhere, looking to intercept every entry pass and pressure any shot {GA} attempts. {GA} wins by creating separation; {GD} wins by staying goal-side and tight."
+    },
+    "WA": {
+      "name": "Wing Attack",
+      "colour": "#FF9933",
+      "temp": "attack",
+      "tagline": "the playmaker",
+      "role": "Receive the Centre Pass, create space, and deliver the ball into the goal circle for {GS} and {GA}.",
+      "zone": "Centre Third and attacking Goal Third - cannot enter the goal circle.",
+      "zoneCaption": "WA can play in the Centre Third and attacking Goal Third, but cannot enter the goal circle.",
+      "note": "Crucial at the Centre Pass. Works closely with {GA} and {GS} to build attacking play.",
+      "opponent": "WD",
+      "matchup": "{WA}'s most important moment is the Centre Pass - they need to break free and give {C} a clean outlet. {WD} works to deny that first pass, shadow {WA} through the centre, and slow the attack. Whoever wins this matchup at each Centre Pass sets the tone for the whole possession."
+    },
+    "C": {
+      "name": "Centre",
+      "colour": "#009933",
+      "temp": "both",
+      "tagline": "the engine of the team",
+      "role": "Link attack and defence across the court. {C} is the only position that can enter all thirds - attacking when their team has the ball, defending when they don't.",
+      "zone": "All thirds of the court except for goal circles.",
+      "zoneCaption": "C can play in all three thirds - the full length of the court. Cannot enter either goal circle.",
+      "note": "{C} does the most running of any position on court - attacks AND defends. Starts every possession with the Centre Pass, and tracks back on every turnover.",
+      "opponent": "C",
+      "matchup": "The {C} battle is the midcourt engine room. Both Centres compete for space, intercepts, and momentum. The {C} with the ball delivers the Centre Pass and drives the attack; the opposing {OPP} pressures, shadows, and tries to force a turnover. {C} attacks AND defends - it is the most demanding role on court."
+    },
+    "WD": {
+      "name": "Wing Defence",
+      "colour": "#009999",
+      "temp": "defend",
+      "tagline": "the pressure player",
+      "role": "Shadow {WA}, shut down their attacking moves, and slow the ball before it reaches the shooters.",
+      "zone": "Centre Third and defensive Goal Third - cannot enter the goal circle.",
+      "zoneCaption": "WD can play in the Centre Third and defensive Goal Third, but cannot enter the goal circle.",
+      "note": "Especially important at the Centre Pass, working to intercept or disrupt {WA}'s first touch.",
+      "opponent": "WA",
+      "matchup": "{WD} shadows {WA} through the centre, working to deny space and disrupt the Centre Pass. {WA} uses sharp leads and quick changes of direction to get free. {WD} wins by staying tight and forcing hesitation; {WA} wins by finding that half-step of separation at the right moment."
+    },
+    "GD": {
+      "name": "Goal Defence",
+      "colour": "#0066CC",
+      "temp": "defend",
+      "tagline": "the defensive partner",
+      "role": "Stick with {GA}, block entry into the goal circle, challenge every shot at goal, and compete for every rebound.",
+      "zone": "Centre Third and defensive Goal Third - including inside the goal circle.",
+      "zoneCaption": "GD can play in the Centre Third and defensive Goal Third, including inside the goal circle.",
+      "note": "Teams up with {GK} to form a strong defensive partnership protecting the post.",
+      "opponent": "GA",
+      "matchup": "{GD} sticks with {GA} from the transverse line to the goal circle, contesting every entry pass and challenging every shot. {GA} uses pace and clever angles to create separation. {GD} wins by staying goal-side; {GA} wins by finding that gap at exactly the right moment."
+    },
+    "GK": {
+      "name": "Goal Keeper",
+      "colour": "#663399",
+      "temp": "defend",
+      "tagline": "the last line of defence",
+      "role": "Stop both shooters from scoring by contesting space, challenging every shot, and fighting for every rebound. Often the tallest player on the team.",
+      "zone": "Defensive Goal Third only - including inside the goal circle.",
+      "zoneCaption": "GK can play in the defensive Goal Third only, including inside the goal circle.",
+      "note": "Works closely with {GD} to protect the post. Needs good balance and reach to stretch and mark both {GS} and {GA} inside the goal circle.",
+      "opponent": "GS",
+      "matchup": "{GK} is the last barrier - their only job is to stop {GS} from scoring. Contest every lead into the goal circle, pressure every shot without obstructing, and win every rebound. {GS} wins if they get clear space inside the circle; {GK} wins by making sure they never do."
+    }
+  }
+};
+
+</script>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">
+      <h1>Elemental Netball <span>Position Logic</span></h1>
+      <p>colour-coded game logic for visual learners</p>
+    </div>
+  </div>
+</header>
+
+<!-- ── View: Position Zones ──────────────────────────────────────────────── -->
+<div id="main-view">
+
+<!-- Matchup band: fixed sides - fire on the left, ice on the right. Always
+     shows the matchup pair (one position per team). Active team gets a zoom
+     + flame/frost effect; the other side stays muted. -->
+<div class="matchup-band" id="matchup-band">
+  <div class="matchup-band-inner">
+    <div class="matchup-side fire-side">
+      <div class="intent-pill" id="intent-fire">THE FIRE TEAM WANTS THE BALL TO BURN ...</div>
+      <div class="matchup-row">
+        <img id="fire-badge" class="big-bib" src="" alt="">
+        <div class="matchup-text">
+          <h2 class="team-role" id="fire-team-role"></h2>
+          <h3 class="pos-name" id="fire-pos-name"></h3>
+          <p class="pos-tagline" id="fire-tagline"></p>
+        </div>
+      </div>
+    </div>
+    <div class="matchup-toggle">
+      <div class="global-toggle">
+        <button class="team-btn fire active" onclick="setTeam('fire')">FIRE TEAM</button>
+        <button class="team-btn ice"        onclick="setTeam('ice')">ICE TEAM</button>
+      </div>
+    </div>
+    <div class="matchup-side ice-side">
+      <div class="intent-pill" id="intent-ice">... THE ICE TEAM WANTS THE BALL TO FREEZE</div>
+      <div class="matchup-row">
+        <div class="matchup-text">
+          <h2 class="team-role" id="ice-team-role"></h2>
+          <h3 class="pos-name" id="ice-pos-name"></h3>
+          <p class="pos-tagline" id="ice-tagline"></p>
+        </div>
+        <img id="ice-badge" class="big-bib" src="" alt="">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="zones-layout">
+  <div class="bib-col fire-col" id="bib-col-fire"></div>
+
+  <!-- Thermometer position selector. ViewBox y-extent matches the court SVG
+       (709.66) so when both render at the same CSS height they sit pixel-
+       aligned alongside each other. -->
+  <svg id="thermo-svg" viewBox="0 0 100 709.66" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+      <defs>
+
+        <symbol id="nb-fill" viewBox="0 0 400 400">
+          <path fill="white" d="M353.34,194.79h.07c-.12-5.73-.5-11.45-1.13-17.11-.38-3.37-.85-6.76-1.41-10.12-16.28-3.02-32.83-5.59-49.24-7.64-33.38-4.17-67.4-6.33-101.11-6.45-34.09.07-68.44,2.24-102.17,6.45-16.4,2.05-32.96,4.62-49.24,7.64-.56,3.36-1.03,6.76-1.41,10.12-.63,5.66-1.01,11.38-1.13,17.1h.07c-.06,1.74-.09,3.48-.1,5.22.01,1.74.04,3.48.1,5.21h-.07c.12,5.73.5,11.45,1.13,17.11.38,3.37.85,6.76,1.41,10.12,16.28,3.02,32.83,5.59,49.24,7.64,33.72,4.21,68.08,6.37,102.17,6.45,33.72-.11,67.73-2.28,101.11-6.45,16.4-2.05,32.95-4.62,49.24-7.64.56-3.36,1.03-6.76,1.41-10.12.63-5.66,1.01-11.38,1.13-17.1h-.07c.06-1.74.09-3.48.1-5.22-.01-1.74-.04-3.48-.1-5.21"/>
+          <path fill="white" d="M359.24,114.41c-3.21-7.2-7.33-13.96-12.26-20.1-5.27-6.56-11.41-12.36-18.27-17.26-7.07,2.35-14.36,4.15-21.71,5.35-7.69,1.25-15.53,1.84-23.33,1.82h-.34s-.33-.07-.33-.07c-8.56-1.67-17.04-4.05-25.2-7.07-6.49-2.4-12.88-5.25-19.01-8.48-7.29,1.21-14.71,2.05-22.07,2.5-5.54.34-11.17.46-16.73.37-5.55.09-11.18-.03-16.72-.37-7.36-.45-14.78-1.29-22.07-2.5-6.14,3.23-12.53,6.07-19.01,8.48-8.16,3.02-16.64,5.4-25.2,7.07l-.33.06h-.34c-7.77.05-15.64-.56-23.33-1.81-7.34-1.2-14.64-2.99-21.71-5.35-6.86,4.89-13,10.69-18.27,17.26-4.93,6.14-9.05,12.89-12.26,20.1.15,6.21.68,12.47,1.57,18.6,1.34,9.22,3.52,18.36,6.5,27.24,16.09-2.97,32.43-5.5,48.64-7.52,33.85-4.22,68.33-6.41,102.55-6.5h0c.18,0,.35,0,.53,0,.6,0,1.2,0,1.79,0,.34,0,.67,0,1.01,0v.02c33.09.22,66.44,2.4,99.19,6.48,16.2,2.02,32.54,4.55,48.64,7.52,2.98-8.88,5.16-18.03,6.5-27.24.89-6.13,1.42-12.38,1.57-18.6"/>
+          <path fill="white" d="M346.98,305.69c4.93-6.14,9.05-12.89,12.26-20.1-.15-6.21-.68-12.47-1.57-18.6-1.34-9.22-3.52-18.36-6.5-27.24-16.09,2.97-32.43,5.5-48.64,7.52-32.75,4.09-66.1,6.26-99.19,6.48v.02c-.34,0-.68,0-1.01,0-.6,0-1.2,0-1.79,0-.18,0-.35,0-.53,0h0c-34.21-.1-68.7-2.28-102.55-6.51-16.2-2.02-32.54-4.55-48.64-7.52-2.98,8.88-5.16,18.03-6.5,27.24-.89,6.13-1.42,12.38-1.57,18.6,3.21,7.2,7.33,13.96,12.26,20.1,5.27,6.56,11.41,12.36,18.27,17.26,7.07-2.35,14.36-4.15,21.71-5.35,7.69-1.25,15.56-1.84,23.33-1.82h.34s.33.07.33.07c8.56,1.67,17.03,4.05,25.2,7.07,6.49,2.4,12.88,5.25,19.01,8.48,7.29-1.21,14.71-2.05,22.07-2.5,5.55-.34,11.17-.46,16.72-.37,5.56-.09,11.19.03,16.74.37,7.37.45,14.79,1.29,22.07,2.5,6.13-3.22,12.52-6.07,19.01-8.48,8.16-3.02,16.64-5.4,25.2-7.07l.33-.07h.34c7.8-.04,15.64.56,23.33,1.81,7.35,1.2,14.64,2.99,21.71,5.35,6.86-4.9,13-10.69,18.27-17.26"/>
+          <path fill="white" d="M305.84,324.75c-7.18-1.17-14.52-1.74-21.78-1.72-8.06,1.59-16.04,3.84-23.73,6.69-5.75,2.13-11.42,4.63-16.89,7.44l9.94,55.6c26-7.21,49.89-19.54,70.5-35.85l1.62-27.38c-6.41-2.08-13.01-3.69-19.66-4.77"/>
+          <path fill="white" d="M156.55,337.16c-5.47-2.81-11.13-5.3-16.89-7.44-7.69-2.85-15.67-5.1-23.73-6.69-.15,0-.31,0-.46,0-7.12,0-14.29.58-21.32,1.72-6.65,1.08-13.25,2.69-19.66,4.77l1.62,27.38c20.61,16.31,44.5,28.64,70.5,35.85l9.94-55.6Z"/>
+          <path fill="white" d="M94.16,75.25c7.18,1.17,14.54,1.76,21.78,1.72,8.06-1.59,16.04-3.84,23.73-6.69,5.75-2.13,11.42-4.63,16.88-7.44l-9.94-55.6c-26,7.21-49.89,19.54-70.5,35.85l-1.62,27.38c6.42,2.08,13.02,3.69,19.66,4.77"/>
+          <path fill="white" d="M331.52,49.46l1.28,21.63c7.45,5.3,14.12,11.57,19.84,18.69,5.49,6.84,10.06,14.4,13.57,22.46l.32.73-.02.79c-.13,6.78-.69,13.6-1.66,20.29-1.47,10.1-3.91,20.11-7.26,29.81.77,4.3,1.41,8.68,1.89,13.02.85,7.64,1.25,15.39,1.2,23.12.05,7.73-.35,15.48-1.2,23.12-.48,4.34-1.12,8.72-1.89,13.02,3.34,9.7,5.79,19.72,7.26,29.81.97,6.69,1.53,13.52,1.66,20.29l.02.79-.32.73c-3.51,8.06-8.08,15.62-13.57,22.46-5.71,7.12-12.39,13.39-19.84,18.69l-1.28,21.63c41.94-36.69,68.48-90.57,68.48-150.54s-26.54-113.86-68.48-150.54"/>
+          <path fill="white" d="M243.44,62.85c5.47,2.81,11.14,5.31,16.89,7.44,7.69,2.85,15.67,5.1,23.73,6.69,7.28.04,14.6-.55,21.78-1.72,6.65-1.08,13.25-2.69,19.66-4.77l-1.62-27.38c-20.61-16.31-44.5-28.64-70.5-35.85l-9.94,55.6Z"/>
+          <path fill="white" d="M246.35,394.57l-10.05-56.23c-6.13-.98-12.82-1.76-20.01-2.2-5.78-.35-11.24-.45-16.35-.36h0c-5.38-.09-10.84.03-16.21.36-6.68.41-13.4,1.17-20.01,2.22l-10.05,56.21c14.88,3.54,30.4,5.43,46.35,5.43s31.47-1.89,46.35-5.43"/>
+          <path fill="white" d="M68.48,350.54l-1.28-21.63c-7.45-5.3-14.12-11.57-19.84-18.69-5.49-6.84-10.06-14.4-13.57-22.46l-.32-.73.02-.79c.13-6.78.69-13.6,1.66-20.29,1.47-10.1,3.91-20.11,7.26-29.81-.77-4.3-1.41-8.68-1.89-13.02-.85-7.64-1.25-15.39-1.2-23.12-.05-7.73.35-15.48,1.2-23.12.48-4.34,1.12-8.72,1.89-13.02-3.34-9.7-5.79-19.71-7.26-29.81-.97-6.69-1.53-13.52-1.66-20.29l-.02-.79.32-.73c3.51-8.06,8.08-15.62,13.57-22.46,5.72-7.12,12.39-13.39,19.84-18.69l1.28-21.63C26.54,86.14,0,140.03,0,200s26.54,113.86,68.48,150.54"/>
+          <path fill="white" d="M163.7,61.64c6.62,1.06,13.34,1.81,20.01,2.22,5.37.33,10.83.45,16.21.36h0c5.11.09,10.58,0,16.35-.36,7.19-.44,13.88-1.23,20.01-2.2l10.05-56.23C231.47,1.89,215.95,0,200,0s-31.47,1.89-46.35,5.43l10.05,56.21Z"/>
+        </symbol>
+
+        <symbol id="nb-stroke" viewBox="0 0 400 400">
+          <circle fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" cx="200" cy="200" r="196.5"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M203.23,151.59c-31.02-.04-65.14,1.69-101.74,6.25-17.5,2.18-34.22,4.85-50.11,7.85-.7,3.92-1.32,8.04-1.8,12.37-1.1,9.84-1.32,18.93-1.04,27.08"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M51.96,166.09c-2.99-8.28-5.87-18.44-7.58-30.24-1-6.92-1.46-13.35-1.57-19.15,2.5-5.74,6.43-13.18,12.62-20.88,6.97-8.68,14.28-14.57,19.81-18.35,6.07,2.11,13.49,4.19,22.06,5.59,8.25,1.34,15.68,1.74,21.93,1.71,6.97-1.36,15.04-3.44,23.77-6.67,7.22-2.68,13.56-5.65,18.97-8.55,6.68,1.15,14.08,2.08,22.11,2.57,5.62.34,10.94.44,15.92.35"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M161.97,69.55c-3.62-20.25-7.24-40.49-10.86-60.74"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M77.13,45.49c-.63,10.66-1.26,21.32-1.9,31.98"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M200,151.6c30.09.08,63.12,1.83,98.52,6.25,17.51,2.19,34.23,4.85,50.11,7.85.7,3.92,1.32,8.04,1.8,12.37,1.1,9.84,1.32,18.93,1.04,27.08"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M348.05,166.09c2.99-8.28,5.87-18.44,7.58-30.24,1-6.92,1.46-13.35,1.57-19.15-2.5-5.74-6.43-13.18-12.62-20.88-6.97-8.68-14.28-14.57-19.81-18.35-6.07,2.11-13.49,4.19-22.06,5.59-8.25,1.34-15.68,1.74-21.93,1.71-6.97-1.36-15.04-3.44-23.77-6.67-7.22-2.68-13.56-5.65-18.97-8.55-6.68,1.15-14.08,2.08-22.11,2.57-5.63.34-10.95.44-15.94.35"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M238.03,69.55c3.62-20.25,7.24-40.49,10.86-60.74"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M322.87,45.49c.63,10.66,1.26,21.32,1.9,31.98"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M203.23,248.41c-31.02.04-65.14-1.69-101.74-6.25-17.5-2.18-34.22-4.85-50.11-7.85-.7-3.92-1.32-8.04-1.8-12.37-1.1-9.84-1.32-18.93-1.04-27.08"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M51.96,233.91c-2.99,8.28-5.87,18.44-7.58,30.24-1,6.92-1.46,13.35-1.57,19.15,2.5,5.74,6.43,13.18,12.62,20.88,6.97,8.68,14.28,14.57,19.81,18.35,6.07-2.11,13.49-4.19,22.06-5.59,8.25-1.34,15.68-1.74,21.93-1.71,6.97,1.36,15.04,3.44,23.77,6.67,7.22,2.68,13.56,5.65,18.97,8.55,6.68-1.15,14.08-2.08,22.11-2.57,5.62-.34,10.94-.44,15.92-.35"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M161.97,330.45c-3.62,20.25-7.24,40.49-10.86,60.74"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M77.13,354.51c-.63-10.66-1.26-21.32-1.9-31.98"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M200,248.4c30.09-.08,63.12-1.83,98.52-6.25,17.51-2.19,34.23-4.85,50.11-7.85.7-3.92,1.32-8.04,1.8-12.37,1.1-9.84,1.32-18.93,1.04-27.08"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M348.05,233.91c2.99,8.28,5.87,18.44,7.58,30.24,1,6.92,1.46,13.35,1.57,19.15-2.5,5.74-6.43,13.18-12.62,20.88-6.97,8.68-14.28,14.57-19.81,18.35-6.07-2.11-13.49-4.19-22.06-5.59-8.25-1.34-15.68-1.74-21.93-1.71-6.97,1.36,15.04,3.44,23.77,6.67,7.22,2.68,13.56,5.65,18.97,8.55,6.68-1.15,14.08-2.08,22.11-2.57-5.63-.34-10.95-.44-15.94-.35"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M238.03,330.45c3.62,20.25,7.24,40.49,10.86,60.74"/>
+          <path fill="none" stroke="#231f20" stroke-miterlimit="10" stroke-width="6.99" d="M322.87,354.51c.63-10.66,1.26-21.32,1.9-31.98"/>
+        </symbol>
+
+        <!-- Snowflake symbol used by the freeze motion particles. Three lines
+             crossing at 60-degree angles read as a stylised six-spoke crystal. -->
+        <symbol id="snowflake" viewBox="-10 -10 20 20" overflow="visible">
+          <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none">
+            <line x1="0" y1="-8" x2="0" y2="8"/>
+            <line x1="-6.93" y1="-4" x2="6.93" y2="4"/>
+            <line x1="-6.93" y1="4" x2="6.93" y2="-4"/>
+          </g>
+        </symbol>
+
+        <linearGradient id="thermo-grad" x1="54.25" y1="0.5" x2="54.25" y2="709.16" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#E53935"/>
+          <stop offset="16%"  stop-color="#F4511E"/>
+          <stop offset="35%"  stop-color="#FB8C00"/>
+          <stop offset="50%"  stop-color="#43A047"/>
+          <stop offset="65%"  stop-color="#00838F"/>
+          <stop offset="84%"  stop-color="#1E88E5"/>
+          <stop offset="100%" stop-color="#8E24AA"/>
+        </linearGradient>
+
+      </defs>
+
+      <!-- Tube background (white) - rounded ends, full court length, widened
+           so the boiling/freezing motion has visible breathing room. -->
+      <rect x="30" y="0.5" width="40" height="708.66" rx="14" fill="white" stroke="none"/>
+      <!-- Spectral gradient (the SCALE) - faint so mercury reads as primary -->
+      <rect x="32" y="0.5" width="36" height="708.66" fill="url(#thermo-grad)" opacity="0.30"/>
+      <!-- Mercury column (the READING) - solid position colour, hot end at top.
+           JS updates `y` and `height` so the column mirrors the current
+           reading: GS fills the tube, GK leaves it nearly empty. -->
+      <rect id="thermo-mercury" x="33" y="0.5" width="34" height="708.66" fill="#E53935"/>
+      <!-- Tick marks at each canonical position Y (right side of tube). The
+           three boundary ticks (GS top, C centre, GK bottom) are slightly
+           longer to read as the named scale points. -->
+      <g class="thermo-ticks" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round">
+        <line x1="70" y1="0.5"    x2="80" y2="0.5"/>
+        <line x1="70" y1="113.5"  x2="76" y2="113.5"/>
+        <line x1="70" y1="234.05" x2="76" y2="234.05"/>
+        <line x1="70" y1="354.83" x2="80" y2="354.83"/>
+        <line x1="70" y1="473.16" x2="76" y2="473.16"/>
+        <line x1="70" y1="596.1"  x2="76" y2="596.1"/>
+        <line x1="70" y1="709.16" x2="80" y2="709.16"/>
+      </g>
+      <!-- Tube outline drawn last so it frames the mercury and ticks cleanly.
+           Class hooks let CSS swap on a fire-border / frost-border filter
+           depending on which team currently has possession. -->
+      <rect class="tube-outline" x="30" y="0.5" width="40" height="708.66" rx="14" fill="none" stroke="#000" stroke-width="2.5" pointer-events="none"/>
+
+      <!-- Draggable netball slider with motion attached. Particles inside the
+           slider group translate with the marker, so the boiling/freezing
+           effect always reads at the ball's current position. Visibility is
+           gated by body.pos-hot / body.pos-cold. -->
+      <g id="thermo-slider" style="cursor:grab;touch-action:none" transform="translate(0, 0.5)">
+        <!-- Motion effects (boil/freeze) intentionally disabled - flat
+             thermometer per design. Markup retained for easy revival. -->
+        <g class="motion-boil" style="display:none">
+          <circle cx="34" cy="0" r="5" fill="#FFB347">
+            <animate attributeName="cy" values="0;-130" dur="0.9s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="4;7;3" dur="0.9s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="44" cy="0" r="4.5" fill="#FFD166">
+            <animate attributeName="cy" values="0;-115" dur="0.9s" begin="0.11s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.11s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="3.5;6;2.5" dur="0.9s" begin="0.11s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="50" cy="0" r="5.5" fill="#FF6B35">
+            <animate attributeName="cy" values="0;-140" dur="0.9s" begin="0.22s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.22s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="4.5;7.5;3" dur="0.9s" begin="0.22s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="56" cy="0" r="4.5" fill="#FFA94D">
+            <animate attributeName="cy" values="0;-122" dur="0.9s" begin="0.33s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.33s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="3.5;6;2.5" dur="0.9s" begin="0.33s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="66" cy="0" r="5" fill="#FFD166">
+            <animate attributeName="cy" values="0;-135" dur="0.9s" begin="0.44s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.44s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="4;6.5;3" dur="0.9s" begin="0.44s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="38" cy="0" r="4" fill="#FF8C42">
+            <animate attributeName="cy" values="0;-118" dur="0.9s" begin="0.55s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.55s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="3;5.5;2" dur="0.9s" begin="0.55s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="60" cy="0" r="4.5" fill="#FFB347">
+            <animate attributeName="cy" values="0;-126" dur="0.9s" begin="0.66s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.66s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="3.5;6;2.5" dur="0.9s" begin="0.66s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="48" cy="0" r="5" fill="#FF6B35">
+            <animate attributeName="cy" values="0;-145" dur="0.9s" begin="0.77s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="0.9s" begin="0.77s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="4;7;3" dur="0.9s" begin="0.77s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g class="motion-freeze" style="display:none">
+          <use href="#snowflake" x="24" y="-10" width="20" height="20" style="color:#B8E5F5">
+            <animate attributeName="y" values="-10;110" dur="1.4s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="35" y="-9" width="18" height="18" style="color:#E0F4FB">
+            <animate attributeName="y" values="-9;96" dur="1.4s" begin="0.17s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="0.17s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="39" y="-11" width="22" height="22" style="color:#7CC1E0">
+            <animate attributeName="y" values="-11;119" dur="1.4s" begin="0.34s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="0.34s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="47" y="-9" width="18" height="18" style="color:#A4D8EC">
+            <animate attributeName="y" values="-9;103" dur="1.4s" begin="0.51s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="0.51s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="56" y="-10" width="20" height="20" style="color:#E0F4FB">
+            <animate attributeName="y" values="-10;115" dur="1.4s" begin="0.68s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="0.68s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="29" y="-9" width="18" height="18" style="color:#7CC1E0">
+            <animate attributeName="y" values="-9;99" dur="1.4s" begin="0.85s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="0.85s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="51" y="-9" width="18" height="18" style="color:#B8E5F5">
+            <animate attributeName="y" values="-9;106" dur="1.4s" begin="1.02s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="1.02s" repeatCount="indefinite"/>
+          </use>
+          <use href="#snowflake" x="38" y="-10" width="20" height="20" style="color:#A4D8EC">
+            <animate attributeName="y" values="-10;125" dur="1.4s" begin="1.19s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.18;0.7;1" dur="1.4s" begin="1.19s" repeatCount="indefinite"/>
+          </use>
+        </g>
+        <!-- Marker netball: enlarged + centred on the tube midline (x=50) -->
+        <circle id="thermo-slider-ball" cx="50" cy="0" r="26" fill="#E53935"/>
+        <use href="#nb-fill" x="24" y="-26" width="52" height="52"/>
+      </g>
+
+    </svg>
+
+    <!-- Zone court -->
+    <div class="zone-col">
+      <div class="court-tools">
+        <button class="court-tool" id="court-rotate"   title="Rotate 90°">⟳</button>
+        <button class="court-tool" id="court-flip-h"   title="Flip court ends">⇋</button>
+        <button class="court-tool" id="court-snapshot" title="Download snapshot">📷</button>
+      </div>
+      <svg id="court-svg" viewBox="0 0 356.56 709.66" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="thermo-court-grad" x1="0" y1="0.5" x2="0" y2="709.16" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#E53935"/>
+            <stop offset="16%"  stop-color="#F4511E"/>
+            <stop offset="35%"  stop-color="#FB8C00"/>
+            <stop offset="50%"  stop-color="#43A047"/>
+            <stop offset="65%"  stop-color="#00838F"/>
+            <stop offset="84%"  stop-color="#1E88E5"/>
+            <stop offset="100%" stop-color="#8E24AA"/>
+          </linearGradient>
+          <clipPath id="court-clip">
+            <rect x="0.5" y="0.5" width="355.56" height="708.66"/>
+          </clipPath>
+        </defs>
+        <g id="court-content">
+          <rect x="0.5" y="0.5" width="355.56" height="708.66" fill="white"/>
+          <g id="zone-overlay" clip-path="url(#court-clip)"></g>
+          <g clip-path="url(#court-clip)">
+            <path fill="none" stroke="#000" stroke-width="2.5" stroke-miterlimit="10" d="M356.06,.5H.5v708.66h355.56V.5ZM184.07,10.99c0,3.2-2.59,5.79-5.79,5.79s-5.79-2.59-5.79-5.79h0c0-3.2,2.59-5.79,5.79-5.79s5.79,2.59,5.79,5.79h0ZM176.48,2.95h0c-3.68.82-6.45,4.11-6.45,8.04,0,4.54,3.7,8.24,8.24,8.24s8.24-3.7,8.24-8.24c0-3.93-2.76-7.21-6.45-8.04h110.42c-.01.96-.04,1.91-.07,2.86-.07,1.9-.19,3.79-.36,5.66-4.1,45.94-35.99,84-78.7,97.2-2.61.81-5.27,1.52-7.96,2.14-.9.21-1.8.4-2.7.59-1.81.37-3.64.69-5.48.97-5.52.84-11.18,1.27-16.93,1.27s-11.41-.44-16.93-1.27c-1.84-.28-3.67-.6-5.48-.97-.91-.18-1.81-.38-2.7-.59-2.69-.62-5.35-1.33-7.96-2.14-42.71-13.2-74.6-51.26-78.7-97.2-.17-1.88-.29-3.76-.36-5.66-.04-.95-.06-1.9-.07-2.86h110.42ZM172.49,698.67c0-3.2,2.59-5.79,5.79-5.79s5.79,2.59,5.79,5.79h0c0,3.2-2.59,5.79-5.79,5.79s-5.79-2.59-5.79-5.79h0ZM180.07,706.71c3.68-.82,6.45-4.11,6.45-8.04,0-4.54-3.7-8.24-8.24-8.24s-8.24,3.7-8.24,8.24c0,3.93,2.76,7.21,6.45,8.04h-110.42c.83-61.18,50.84-110.7,112.21-110.7s111.39,49.52,112.21,110.7h-110.42ZM353.61,706.71h-60.66c-.83-62.53-51.94-113.15-114.66-113.15s-113.84,50.62-114.66,113.15H2.95v-231.1h350.65v231.1ZM353.61,473.16H2.95v-236.66h350.65v236.66ZM353.61,234.05H2.95V2.95h60.67c.83,62.53,51.94,113.15,114.66,113.15s113.84-50.62,114.66-113.15h60.66v231.1Z"/>
+            <path fill="none" stroke="#000" stroke-width="2.5" stroke-miterlimit="10" d="M178.28,368.86c7.73,0,14.03-6.29,14.03-14.03s-6.29-14.03-14.03-14.03-14.03,6.29-14.03,14.03,6.29,14.03,14.03,14.03ZM166.7,354.83c0-6.39,5.18-11.58,11.58-11.58s11.58,5.18,11.58,11.58h0c0,6.39-5.18,11.58-11.58,11.58s-11.58-5.18-11.58-11.58h0Z"/>
+          </g>
+          <!-- Player tokens (14 draggable bibs, populated by JS). Click selects
+               the position; drag moves within the position's allowed zone. -->
+          <g id="player-tokens"></g>
+          <!-- Ball: free-drag tactical aid. Inner group counter-rotates so
+               the netball stays upright when the court rotates/flips. -->
+          <g id="tracker-ball" transform="translate(178.28,354.83)" style="cursor:grab;touch-action:none">
+            <g class="ball-inner">
+              <circle r="20" fill="white" stroke="#1A1A1A" stroke-width="1.6"/>
+              <use href="#nb-stroke" x="-20" y="-20" width="40" height="40"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+      <p class="zone-caption" id="zone-caption"></p>
+      <div class="court-lock-hint" id="court-lock-hint">tap court to interact</div>
+    </div>
+
+  <div class="bib-col ice-col" id="bib-col-ice"></div>
+
+  <div class="pos-details">
+    <div class="detail-row">
+      <strong>Role</strong>
+      <span id="pos-role"></span>
+    </div>
+    <div class="detail-row">
+      <strong>Zone</strong>
+      <span id="pos-zone-text"></span>
+    </div>
+    <div class="detail-row">
+      <strong>Note</strong>
+      <span id="pos-note"></span>
+    </div>
+  </div>
+  <div class="opponent-section opp-ice">
+    <div class="opponent-heading" id="opponent-heading">Matchup</div>
+    <p id="matchup-text"></p>
+  </div>
+</div><!-- end .zones-layout -->
+</div><!-- end #main-view -->
+
+<footer>
+  <p class="footer-sig">💎 gemeroni 💎</p>
+</footer>
+
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="fire-border" x="-30%" y="-45%" width="160%" height="190%" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency="0.035 0.08" numOctaves="3" seed="2" result="noise"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="dilated"/>
+      <feDisplacementMap in="dilated" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="flamed"/>
+      <feFlood flood-color="white" result="white"/>
+      <feComposite in="white" in2="flamed" operator="in" result="border"/>
+      <feMerge><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="frost-border" x="-22%" y="-22%" width="144%" height="144%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.13" numOctaves="2" seed="9" result="noise"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="dilated"/>
+      <feDisplacementMap in="dilated" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" result="crystalline"/>
+      <feFlood flood-color="white" result="white"/>
+      <feComposite in="white" in2="crystalline" operator="in" result="border"/>
+      <feMerge><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+  const ASSET     = '';
+  const BIB_DIR   = '';
+  const POS       = POSITIONS_DATA.positions;
+  const ORDER     = POSITIONS_DATA.order;
+  const BIB = {
+    fire: {
+      GS:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjYzMzOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjAuODcsNDcuNzRjMi4xNCwxLjIyLDQuNTgsMS44Myw3LjMyLDEuODMsMS41NywwLDMuMDUtLjIsNC40NS0uNjEsMS4zOS0uNDEsMi40My0uOTEsMy4xMi0xLjUydi0xNC45MWgtOS45M3Y2LjMxaDMuMTZ2My44OGMtLjI3LjA1LS41Ny4wOC0uOTEuMDgtMS4yMiwwLTIuMjctLjMyLTMuMTYtLjk3LS44OS0uNjUtMS41OC0xLjUyLTIuMDctMi42MS0uNDktMS4wOS0uNzQtMi4zMy0uNzQtMy43M3MuMjctMi43LjgyLTMuODRjLjU0LTEuMTQsMS4zMi0yLjAzLDIuMzQtMi42NiwxLjAxLS42MywyLjIxLS45NSwzLjU4LS45NSwxLjEyLDAsMi4xNy4yLDMuMTYuNTkuOTkuMzksMS45NC45OCwyLjg1LDEuNzdsLS4wNC03Ljk5Yy0uODEtLjQ4LTEuODItLjg2LTMuMDItMS4xMi0xLjItLjI3LTIuNDEtLjQtMy42My0uNC0yLjcxLDAtNS4xNC42My03LjI4LDEuOS0yLjE0LDEuMjctMy44MSwzLTUsNS4xOS0xLjE5LDIuMTktMS43OSw0LjYyLTEuNzksNy4yOHMuNiw1LjIzLDEuNzksNy40YzEuMTksMi4xNywyLjg2LDMuODYsNSw1LjA4WiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTQwLjk5LDM1LjM4Yy45Ljg0LDEuOTgsMS41NiwzLjI1LDIuMTcuNjYuNDEsMS4zMi43NSwxLjk4LDEuMDMuOTEuNDMsMS41Ni44MSwxLjk0LDEuMTRzLjU3Ljc2LjU3LDEuMjljMCwuMzMtLjA5LjYzLS4yOC44OS0uMTkuMjctLjQ0LjQ4LS43Ni42My0uMzIuMTUtLjczLjIzLTEuMjQuMjMtLjk2LDAtMS45Ni0uMjctMi45OS0uOC0xLjAzLS41My0xLjk2LTEuMi0yLjgxLTItLjg1LS44LTEuNTQtMS42Mi0yLjA3LTIuNDV2OC43OWMuNDguNjMsMS4xMywxLjE5LDEuOTYsMS42Ny44Mi40OCwxLjc3Ljg3LDIuODMsMS4xNiwxLjA2LjI5LDIuMTYuNDQsMy4yNy40NCwxLjg4LDAsMy41Ni0uMzksNS4wNC0xLjE4czIuNjQtMS44NiwzLjQ2LTMuMjNjLjgyLTEuMzcsMS4yNC0yLjg3LDEuMjQtNC40OSwwLTEuMjctLjI2LTIuNC0uNzgtMy4zOC0uNTItLjk5LTEuMjItMS44Ni0yLjExLTIuNjFzLTEuOTQtMS40NS0zLjE2LTIuMTFjLS40My0uMTUtLjc2LS4zLS45OS0uNDQtLjIzLS4xNC0uNTctLjI5LTEuMDMtLjQ0LS45OS0uNDgtMS42Ny0uODgtMi4wNS0xLjItLjM4LS4zMi0uNTctLjcyLS41Ny0xLjIsMC0uMy4wOS0uNi4yNy0uODcuMTgtLjI4LjQzLS40Ny43Ni0uNTdzLjcxLS4xNSwxLjE0LS4xNWMxLjI0LDAsMi41Mi4zNCwzLjg0LDEuMDNzMi42MSwxLjYxLDMuODgsMi43OGwtLjM4LTcuOTljLS42OS0uNjktMS42OC0xLjI5LTIuOTktMS44My0xLjMxLS41My0yLjc5LS44LTQuNDctLjgtMS44LDAtMy40Mi4zNC00Ljg3LDEuMDNzLTIuNTksMS42Ni0zLjQ0LDIuOTNjLS44NSwxLjI3LTEuMjcsMi43MS0xLjI3LDQuMzQsMCwxLjIyLjI1LDIuMzUuNzQsMy4zOC40OSwxLjA0LDEuMTksMS45OCwyLjA5LDIuODFaIi8+CiAgICAgIDwvZz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==',
+      GA:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2Y2MzsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTguMDgsNDcuNzRjMi4xNCwxLjIyLDQuNTgsMS44Myw3LjMyLDEuODMsMS41NywwLDMuMDUtLjIsNC40NS0uNjEsMS4zOS0uNDEsMi40My0uOTEsMy4xMi0xLjUydi0xNC45MWgtOS45M3Y2LjMxaDMuMTZ2My44OGMtLjI3LjA1LS41Ny4wOC0uOTEuMDgtMS4yMiwwLTIuMjctLjMyLTMuMTYtLjk3LS44OS0uNjUtMS41OC0xLjUyLTIuMDctMi42MS0uNDktMS4wOS0uNzQtMi4zMy0uNzQtMy43M3MuMjctMi43LjgyLTMuODRjLjU0LTEuMTQsMS4zMi0yLjAzLDIuMzQtMi42NiwxLjAxLS42MywyLjIxLS45NSwzLjU4LS45NSwxLjEyLDAsMi4xNy4yLDMuMTYuNTkuOTkuMzksMS45NC45OCwyLjg1LDEuNzdsLS4wNC03Ljk5Yy0uODEtLjQ4LTEuODItLjg2LTMuMDItMS4xMi0xLjItLjI3LTIuNDEtLjQtMy42My0uNC0yLjcxLDAtNS4xNC42My03LjI4LDEuOS0yLjE0LDEuMjctMy44MSwzLTUsNS4xOS0xLjE5LDIuMTktMS43OSw0LjYyLTEuNzksNy4yOHMuNiw1LjIzLDEuNzksNy40YzEuMTksMi4xNywyLjg2LDMuODYsNSw1LjA4WiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTQxLjgzLDIxLjQybC03LjMsMjcuNjFoNy43NmwxLjEzLTQuNzloNi43OGwxLjExLDQuNzloNy44N2wtNy4zLTI3LjYxaC0xMC4wNFpNNDguODQsMzcuNzRoLTQuMDNsMi05LjQzLDIuMDMsOS40M1oiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+',
+      WA:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZjkzOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9IjIyLjY0IDQ5LjAzIDI1LjE3IDM2LjM3IDI3Ljc0IDQ5LjAzIDM0Ljg1IDQ5LjAzIDM5LjI2IDIxLjQyIDMyLjA3IDIxLjQyIDMwLjIgMzcuNjQgMjcuMjQgMjEuNDIgMjMuMjEgMjEuNDIgMjAuMzIgMzcuOTUgMTguNDIgMjEuNDIgMTEuMjMgMjEuNDIgMTUuNjggNDkuMDMgMjIuNjQgNDkuMDMiLz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik00NS45MSw0NC40N2g1LjIxbC43Nyw0LjU2aDcuMzRsLTUuODItMjcuNjFoLTkuNjJsLTUuOSwyNy42MWg3LjIzbC43OS00LjU2Wk00Ni45NSwzOC4wMWwxLjYxLTEwLjE3LDEuNTgsMTAuMTdoLTMuMTlaIi8+CiAgICAgIDwvZz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==',
+      C:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjMDkzOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjUuNTMsMjguMzNjLTEuMjIsMi4yNC0xLjgzLDQuNjYtMS44Myw3LjI1cy42NSw1LjA5LDEuOTYsNy4yMSwzLjA0LDMuNzYsNS4xOSw0Ljk0LDQuNDUsMS43Nyw2Ljg4LDEuNzdjMS42MiwwLDMuMTQtLjIyLDQuNTQtLjY1LDEuNDEtLjQzLDIuNjMtMS4wNSwzLjY3LTEuODZsLjgtOC42Yy0xLjE5LDEuMzItMi40OSwyLjM1LTMuODgsMy4xLTEuMzkuNzUtMi44LDEuMTItNC4yMiwxLjEyLTEuMzIsMC0yLjUyLS4zMi0zLjU5LS45Ny0xLjA4LS42NS0xLjk0LTEuNTMtMi41OS0yLjY2LS42NS0xLjEzLS45Ny0yLjM4LS45Ny0zLjc1cy4zMy0yLjY1Ljk5LTMuNzZjLjY2LTEuMTIsMS41NC0yLDIuNjQtMi42NCwxLjEtLjY1LDIuMzEtLjk3LDMuNjMtLjk3LDEuMzksMCwyLjcxLjM3LDMuOTYsMS4xczIuNCwxLjc3LDMuNDYsMy4xMnYtOC44MmMtMS4xOS0uNzYtMi41LTEuMzMtMy45Mi0xLjcxLTEuNDItLjM4LTIuODEtLjU3LTQuMTgtLjU3LTIuNzYsMC01LjI0LjY3LTcuNDQsMi0yLjE5LDEuMzMtMy45LDMuMTItNS4xMiw1LjM2WiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+',
+      WD:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjMDk5OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9IjMxLjU4IDIxLjQyIDI5LjcxIDM3LjY0IDI2Ljc1IDIxLjQyIDIyLjcyIDIxLjQyIDE5LjgzIDM3Ljk1IDE3LjkyIDIxLjQyIDEwLjc0IDIxLjQyIDE1LjE5IDQ5LjA0IDIyLjE1IDQ5LjA0IDI0LjY4IDM2LjM3IDI3LjI0IDQ5LjA0IDM0LjM1IDQ5LjA0IDM4Ljc3IDIxLjQyIDMxLjU4IDIxLjQyIi8+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNDcuNDgsNDkuMDRoMS40OGMxLjkzLDAsMy43LS41OCw1LjMyLTEuNzMsMS42Mi0xLjE1LDIuOTEtMi44LDMuODYtNC45NC45NS0yLjE0LDEuNDMtNC41NiwxLjQzLTcuMjRzLS40OC01LjE1LTEuNDMtNy4yNWMtLjk1LTIuMDktMi4yNS0zLjY5LTMuOS00Ljc5LTEuNjUtMS4xLTMuNDctMS42NS01LjQ4LTEuNjVoLTguNDF2MjcuNjFoNy4xMVpNNDguMjQsMjhjLjc2LDAsMS40My4yNiwyLC43OC41Ny41MiwxLjAzLDEuMzIsMS4zOSwyLjQuMzUsMS4wOC41MywyLjQzLjUzLDQuMDVzLS4xNywyLjkyLS41MSw0LjA1Yy0uMzQsMS4xMy0uODEsMS45Ny0xLjQxLDIuNTEtLjYuNTUtMS4yNi44Mi0yLC44MmgtLjc2di0xNC42aC43NloiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+',
+      GD:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjMDZjOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjMuMTUsMjguOTljMS4wMS0uNjMsMi4yMS0uOTUsMy41OC0uOTUsMS4xMiwwLDIuMTcuMiwzLjE2LjU5Ljk5LjM5LDEuOTQuOTgsMi44NSwxLjc3bC0uMDQtNy45OWMtLjgxLS40OC0xLjgyLS44Ni0zLjAyLTEuMTItMS4yLS4yNy0yLjQxLS40LTMuNjMtLjQtMi43MSwwLTUuMTQuNjMtNy4yOCwxLjktMi4xNCwxLjI3LTMuODEsMy01LDUuMTktMS4xOSwyLjE5LTEuNzksNC42Mi0xLjc5LDcuMjhzLjYsNS4yMywxLjc5LDcuNGMxLjE5LDIuMTcsMi44NiwzLjg2LDUsNS4wOCwyLjE0LDEuMjIsNC41OCwxLjgzLDcuMzIsMS44MywxLjU3LDAsMy4wNS0uMiw0LjQ1LS42MSwxLjM5LS40MSwyLjQzLS45MSwzLjEyLTEuNTJ2LTE0LjkxaC05LjkzdjYuMzFoMy4xNnYzLjg4Yy0uMjcuMDUtLjU3LjA4LS45MS4wOC0xLjIyLDAtMi4yNy0uMzItMy4xNi0uOTctLjg5LS42NS0xLjU4LTEuNTEtMi4wNy0yLjYxLS40OS0xLjA5LS43NC0yLjMzLS43NC0zLjczcy4yNy0yLjcuODItMy44NGMuNTQtMS4xNCwxLjMyLTIuMDMsMi4zNC0yLjY2WiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTQ0LjY0LDQ5LjAzaDIuMjRjMi4zMSwwLDQuMzctLjU4LDYuMi0xLjczLDEuODMtMS4xNSwzLjI3LTIuNzksNC4zNC00LjkxLDEuMDctMi4xMiwxLjYtNC41NCwxLjYtNy4yOHMtLjUzLTUuMTUtMS41OC03LjIzYy0xLjA1LTIuMDgtMi41MS0zLjY4LTQuMzctNC43OS0xLjg2LTEuMTItMy45OC0xLjY3LTYuMzMtMS42N2gtOS43N3YyNy42MWg3LjY4Wk00Ni4wMSwyOC4zNWMuOTYsMCwxLjgyLjI0LDIuNTcuNzIuNzUuNDgsMS4zNCwxLjI0LDEuNzksMi4yNi40NCwxLjAzLjY3LDIuMzMuNjcsMy45cy0uMjIsMi44OC0uNjcsMy45MmMtLjQ0LDEuMDQtMS4wNSwxLjgxLTEuODEsMi4zLS43Ni41LTEuNjEuNzQtMi41NS43NGgtMS4zN3YtMTMuODRoMS4zN1oiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+',
+      GK:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC40NiA3MC40NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogIzYzOTsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4yOCIgeT0iNS4yOCIgd2lkdGg9IjU5Ljg5IiBoZWlnaHQ9IjU5Ljg5IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjUsNS4yOGM2Ljk3LDAsMTIuNjgsNS43LDEyLjY4LDEyLjY4djM0LjU0YzAsNi45Ny01LjcsMTIuNjgtMTIuNjgsMTIuNjhIMTcuOTZjLTYuOTcsMC0xMi42OC01LjctMTIuNjgtMTIuNjhWMTcuOTZjMC02Ljk3LDUuNy0xMi42OCwxMi42OC0xMi42OGgzNC41NE01Mi41LDBIMTcuOTZDOC4wNiwwLDAsOC4wNiwwLDE3Ljk2djM0LjU0YzAsOS45LDguMDYsMTcuOTYsMTcuOTYsMTcuOTZoMzQuNTRjOS45LDAsMTcuOTYtOC4wNiwxNy45Ni0xNy45NlYxNy45NmMwLTkuOS04LjA2LTE3Ljk2LTE3Ljk2LTE3Ljk2aDBaIi8+CiAgICAgIDwvZz4KICAgICAgPGc+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMjMuNDIsMzguODRoMy4xNnYzLjg4Yy0uMjcuMDUtLjU3LjA4LS45MS4wOC0xLjIyLDAtMi4yNy0uMzItMy4xNi0uOTctLjg5LS42NS0xLjU4LTEuNTEtMi4wNy0yLjYxLS40OS0xLjA5LS43NC0yLjMzLS43NC0zLjczcy4yNy0yLjcuODItMy44NGMuNTQtMS4xNCwxLjMyLTIuMDMsMi4zNC0yLjY2LDEuMDEtLjYzLDIuMjEtLjk1LDMuNTgtLjk1LDEuMTIsMCwyLjE3LjIsMy4xNi41OS45OS4zOSwxLjk0Ljk4LDIuODUsMS43N2wtLjA0LTcuOTljLS44MS0uNDgtMS44Mi0uODYtMy4wMi0xLjEyLTEuMi0uMjctMi40MS0uNC0zLjYzLS40LTIuNzEsMC01LjE0LjYzLTcuMjgsMS45LTIuMTQsMS4yNy0zLjgxLDMtNSw1LjE5LTEuMTksMi4xOS0xLjc5LDQuNjItMS43OSw3LjI4cy42LDUuMjMsMS43OSw3LjRjMS4xOSwyLjE3LDIuODYsMy44Niw1LDUuMDgsMi4xNCwxLjIyLDQuNTgsMS44Myw3LjMyLDEuODMsMS41NywwLDMuMDUtLjIsNC40NS0uNjEsMS4zOS0uNDEsMi40My0uOTEsMy4xMi0xLjUydi0xNC45MWgtOS45M3Y2LjMxWiIvPgogICAgICAgIDxwb2x5Z29uIGNsYXNzPSJjbHMtMiIgcG9pbnRzPSI1MC4zNSAyMS40MiA0NC4zOCAzMS42MiA0NC4zOCAyMS40MiAzNi42NiAyMS40MiAzNi42NiA0OS4wNCA0NC4zOCA0OS4wNCA0NC4zOCAzOC4yNSA0OS45NyA0OS4wNCA1OC43MSA0OS4wNCA1MC41MiAzNC40NyA1OC43OSAyMS40MiA1MC4zNSAyMS40MiIvPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4='
+    },
+    ice: {
+      GS:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogIzYzOTsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8Zz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yMC45OSw0OC4wMmMyLjE1LDEuMjIsNC42MSwxLjg0LDcuMzYsMS44NCwxLjU4LDAsMy4wNy0uMiw0LjQ4LS42MSwxLjQtLjQxLDIuNDUtLjkyLDMuMTQtMS41M3YtMTQuOTloLTkuOTh2Ni4zNWgzLjE4djMuOWMtLjI3LjA1LS41Ny4wOC0uOTIuMDgtMS4yMiwwLTIuMjgtLjMzLTMuMTctLjk4LS44OS0uNjUtMS41OS0xLjUyLTIuMDktMi42Mi0uNS0xLjEtLjc1LTIuMzUtLjc1LTMuNzVzLjI3LTIuNzIuODItMy44NmMuNTUtMS4xNSwxLjMzLTIuMDQsMi4zNS0yLjY4LDEuMDItLjY0LDIuMjItLjk2LDMuNi0uOTYsMS4xMiwwLDIuMTguMiwzLjE3LjU5LDEsLjQsMS45NS45OSwyLjg3LDEuNzhsLS4wNC04LjAzYy0uODItLjQ4LTEuODMtLjg2LTMuMDQtMS4xMy0xLjIxLS4yNy0yLjQzLS40LTMuNjUtLjQtMi43MywwLTUuMTcuNjQtNy4zMiwxLjkxLTIuMTYsMS4yOC0zLjgzLDMuMDItNS4wMyw1LjIyLTEuMiwyLjIxLTEuOCw0LjY1LTEuOCw3LjMycy42LDUuMjYsMS44LDcuNDRjMS4yLDIuMTgsMi44NywzLjg4LDUuMDMsNS4xMVoiLz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik00MS4yMywzNS41OWMuOS44NCwyLDEuNTcsMy4yNywyLjE4LjY2LjQxLDEuMzMuNzUsMS45OSwxLjAzLjkyLjQzLDEuNTcuODIsMS45NSwxLjE1cy41Ny43Ni41NywxLjNjMCwuMzMtLjEuNjMtLjI5LjktLjE5LjI3LS40NS40OC0uNzcuNjMtLjMyLjE1LS43My4yMy0xLjI0LjIzLS45NywwLTEuOTctLjI3LTMtLjgtMS4wMy0uNTQtMS45OC0xLjIxLTIuODMtMi4wMS0uODUtLjgtMS41NS0xLjYzLTIuMDgtMi40N3Y4Ljg0Yy40OC42NCwxLjE0LDEuMiwxLjk3LDEuNjguODMuNDgsMS43OC44NywyLjg1LDEuMTcsMS4wNy4yOSwyLjE3LjQ0LDMuMjkuNDQsMS44OSwwLDMuNTgtLjQsNS4wNy0xLjE5czIuNjUtMS44NywzLjQ4LTMuMjVjLjgzLTEuMzgsMS4yNC0yLjg4LDEuMjQtNC41MSwwLTEuMjctLjI2LTIuNDEtLjc4LTMuNC0uNTItLjk5LTEuMjMtMS44Ny0yLjEyLTIuNjJzLTEuOTUtMS40Ni0zLjE4LTIuMTJjLS40My0uMTUtLjc2LS4zLS45OS0uNDQtLjIzLS4xNC0uNTctLjI5LTEuMDMtLjQ0LTEtLjQ4LTEuNjgtLjg5LTIuMDctMS4yLS4zOC0uMzItLjU3LS43Mi0uNTctMS4yMSwwLS4zMS4wOS0uNi4yNy0uODguMTgtLjI4LjQzLS40Ny43Ni0uNTdzLjcxLS4xNSwxLjE1LS4xNWMxLjI1LDAsMi41NC4zNCwzLjg2LDEuMDNzMi42MywxLjYyLDMuOSwyLjc5bC0uMzgtOC4wM2MtLjY5LS42OS0xLjY5LTEuMy0zLTEuODQtMS4zMS0uNTQtMi44MS0uOC00LjQ5LS44LTEuODEsMC0zLjQ0LjM0LTQuOSwxLjAzcy0yLjYxLDEuNjctMy40NiwyLjk1Yy0uODYsMS4yOC0xLjI4LDIuNzMtMS4yOCw0LjM2LDAsMS4yMi4yNSwyLjM2Ljc1LDMuNC41LDEuMDUsMS4yLDEuOTksMi4xLDIuODNaIi8+CiAgICAgIDwvZz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==',
+      GA:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjMDZjOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8Zz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xOC4xOCw0OC4wMmMyLjE1LDEuMjIsNC42MSwxLjg0LDcuMzYsMS44NCwxLjU4LDAsMy4wNy0uMiw0LjQ4LS42MSwxLjQtLjQxLDIuNDUtLjkyLDMuMTQtMS41M3YtMTQuOTloLTkuOTh2Ni4zNWgzLjE4djMuOWMtLjI3LjA1LS41Ny4wOC0uOTIuMDgtMS4yMiwwLTIuMjgtLjMzLTMuMTctLjk4LS44OS0uNjUtMS41OS0xLjUyLTIuMDktMi42Mi0uNS0xLjEtLjc1LTIuMzUtLjc1LTMuNzVzLjI3LTIuNzIuODItMy44NmMuNTUtMS4xNSwxLjMzLTIuMDQsMi4zNS0yLjY4LDEuMDItLjY0LDIuMjItLjk2LDMuNi0uOTYsMS4xMiwwLDIuMTguMiwzLjE3LjU5LDEsLjQsMS45NS45OSwyLjg3LDEuNzhsLS4wNC04LjAzYy0uODItLjQ4LTEuODMtLjg2LTMuMDQtMS4xMy0xLjIxLS4yNy0yLjQzLS40LTMuNjUtLjQtMi43MywwLTUuMTcuNjQtNy4zMiwxLjkxLTIuMTYsMS4yOC0zLjgzLDMuMDItNS4wMyw1LjIyLTEuMiwyLjIxLTEuOCw0LjY1LTEuOCw3LjMycy42LDUuMjYsMS44LDcuNDRjMS4yLDIuMTgsMi44NywzLjg4LDUuMDMsNS4xMVoiLz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik00Mi4wNywyMS41NWwtNy4zNCwyNy43N2g3LjhsMS4xMy00LjgyaDYuODJsMS4xMSw0LjgyaDcuOTJsLTcuMzQtMjcuNzdoLTEwLjFaTTQ5LjEzLDM3Ljk2aC00LjA2bDIuMDEtOS40OCwyLjA0LDkuNDhaIi8+CiAgICAgIDwvZz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg==',
+      WA:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjMDk5OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8Zz4KICAgICAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMjIuNzcgNDkuMzIgMjUuMzIgMzYuNTggMjcuOSA0OS4zMiAzNS4wNSA0OS4zMiAzOS40OSAyMS41NSAzMi4yNiAyMS41NSAzMC4zOCAzNy44NiAyNy40IDIxLjU1IDIzLjM0IDIxLjU1IDIwLjQ0IDM4LjE3IDE4LjUyIDIxLjU1IDExLjMgMjEuNTUgMTUuNzcgNDkuMzIgMjIuNzcgNDkuMzIiLz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik00Ni4xNyw0NC43M2g1LjI0bC43Nyw0LjU5aDcuMzhsLTUuODUtMjcuNzdoLTkuNjhsLTUuOTMsMjcuNzdoNy4yN2wuNzktNC41OVpNNDcuMjIsMzguMjNsMS42Mi0xMC4yMywxLjU5LDEwLjIzaC0zLjIxWiIvPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=',
+      C:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjMDkzOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yNS42OCwyOC40OWMtMS4yMiwyLjI2LTEuODQsNC42OS0xLjg0LDcuMjlzLjY2LDUuMTIsMS45Nyw3LjI1LDMuMDUsMy43OSw1LjIyLDQuOTcsNC40OCwxLjc4LDYuOTIsMS43OGMxLjYzLDAsMy4xNi0uMjIsNC41Ny0uNjUsMS40Mi0uNDMsMi42NS0xLjA2LDMuNjktMS44OGwuOC04LjY0Yy0xLjIsMS4zMy0yLjUsMi4zNy0zLjksMy4xMi0xLjQuNzUtMi44MiwxLjEzLTQuMjUsMS4xMy0xLjMzLDAtMi41My0uMzItMy42MS0uOTgtMS4wOC0uNjUtMS45NS0xLjU0LTIuNi0yLjY4LS42NS0xLjEzLS45OC0yLjM5LS45OC0zLjc3cy4zMy0yLjY2LDEtMy43OWMuNjYtMS4xMiwxLjU1LTIuMDEsMi42Ni0yLjY2LDEuMTEtLjY1LDIuMzMtLjk4LDMuNjUtLjk4LDEuNCwwLDIuNzMuMzcsMy45OCwxLjExczIuNDEsMS43OCwzLjQ4LDMuMTR2LTguODhjLTEuMi0uNzYtMi41MS0xLjM0LTMuOTQtMS43Mi0xLjQzLS4zOC0yLjgzLS41Ny00LjIxLS41Ny0yLjc4LDAtNS4yNy42Ny03LjQ4LDIuMDEtMi4yMSwxLjM0LTMuOTIsMy4xNC01LjE1LDUuMzlaIi8+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=',
+      WD:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZjkzOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8Zz4KICAgICAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMzEuODQgMjEuNTUgMjkuOTYgMzcuODYgMjYuOTggMjEuNTUgMjIuOTIgMjEuNTUgMjAuMDIgMzguMTcgMTguMSAyMS41NSAxMC44NyAyMS41NSAxNS4zNSA0OS4zMiAyMi4zNSA0OS4zMiAyNC45IDM2LjU4IDI3LjQ4IDQ5LjMyIDM0LjYzIDQ5LjMyIDM5LjA3IDIxLjU1IDMxLjg0IDIxLjU1Ii8+CiAgICAgICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNDcuODMsNDkuMzJoMS40OWMxLjk0LDAsMy43Mi0uNTgsNS4zNi0xLjc0LDEuNjMtMS4xNiwyLjkzLTIuODIsMy44OC00Ljk3Ljk2LTIuMTUsMS40NC00LjU4LDEuNDQtNy4yOXMtLjQ4LTUuMTgtMS40NC03LjI5Yy0uOTYtMi4xLTIuMjYtMy43MS0zLjkyLTQuODItMS42Ni0xLjExLTMuNDktMS42Ni01LjUxLTEuNjZoLTguNDV2MjcuNzdoNy4xNVpNNDguNTksMjguMTdjLjc2LDAsMS40NC4yNiwyLjAxLjc4LjU3LjUyLDEuMDQsMS4zMywxLjQsMi40MS4zNiwxLjA4LjU0LDIuNDQuNTQsNC4wN3MtLjE3LDIuOTQtLjUyLDQuMDdjLS4zNCwxLjE0LS44MiwxLjk4LTEuNDIsMi41Mi0uNi41NS0xLjI3LjgyLTIuMDEuODJoLS43NnYtMTQuNjloLjc2WiIvPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=',
+      GD:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2Y2MzsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8Zz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik0yMy4wMiwyOS4xNmMxLjAyLS42NCwyLjIyLS45NiwzLjYtLjk2LDEuMTIsMCwyLjE4LjIsMy4xNy41OSwxLC40LDEuOTUuOTksMi44NywxLjc4bC0uMDQtOC4wM2MtLjgyLS40OC0xLjgzLS44Ni0zLjA0LTEuMTMtMS4yMS0uMjctMi40My0uNC0zLjY1LS40LTIuNzMsMC01LjE3LjY0LTcuMzIsMS45MS0yLjE2LDEuMjgtMy44MywzLjAyLTUuMDMsNS4yMi0xLjIsMi4yMS0xLjgsNC42NS0xLjgsNy4zMnMuNiw1LjI2LDEuOCw3LjQ0YzEuMiwyLjE4LDIuODcsMy44OCw1LjAzLDUuMTEsMi4xNSwxLjIyLDQuNjEsMS44NCw3LjM2LDEuODQsMS41OCwwLDMuMDctLjIsNC40OC0uNjEsMS40LS40MSwyLjQ1LS45MiwzLjE0LTEuNTN2LTE0Ljk5aC05Ljk4djYuMzVoMy4xOHYzLjljLS4yNy4wNS0uNTcuMDgtLjkyLjA4LTEuMjIsMC0yLjI4LS4zMi0zLjE3LS45OC0uODktLjY1LTEuNTktMS41Mi0yLjA5LTIuNjItLjUtMS4xLS43NS0yLjM1LS43NS0zLjc1cy4yNy0yLjcyLjgyLTMuODZjLjU1LTEuMTUsMS4zMy0yLjA0LDIuMzUtMi42OFoiLz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik00NC42Myw0OS4zMmgyLjI2YzIuMzIsMCw0LjQtLjU4LDYuMjQtMS43NCwxLjg0LTEuMTYsMy4yOS0yLjgsNC4zNi00LjkzLDEuMDctMi4xMywxLjYxLTQuNTcsMS42MS03LjMycy0uNTMtNS4xOC0xLjU5LTcuMjdjLTEuMDYtMi4wOS0yLjUyLTMuNy00LjQtNC44Mi0xLjg4LTEuMTItNC0xLjY4LTYuMzctMS42OGgtOS44M3YyNy43N2g3LjczWk00Ni4wMSwyOC41MWMuOTcsMCwxLjgzLjI0LDIuNTguNzMuNzUuNDgsMS4zNSwxLjI0LDEuOCwyLjI4LjQ1LDEuMDMuNjcsMi4zNC42NywzLjkycy0uMjIsMi45LS42NywzLjk0Yy0uNDUsMS4wNS0xLjA1LDEuODItMS44MiwyLjMxLS43Ni41LTEuNjIuNzUtMi41Ni43NWgtMS4zOHYtMTMuOTJoMS4zOFoiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+',
+      GK:'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMiIgZGF0YS1uYW1lPSJMYXllciAyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MC44NyA3MC44NyI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjYzMzOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iTGF5ZXJfMS0yIiBkYXRhLW5hbWU9IkxheWVyIDEiPgogICAgPGc+CiAgICAgIDxnPgogICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iNS4zMSIgeT0iNS4zMSIgd2lkdGg9IjYwLjI0IiBoZWlnaHQ9IjYwLjI0IiByeD0iMTIiIHJ5PSIxMiIvPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTUyLjgsNS4zMWM3LjAxLDAsMTIuNzUsNS43NCwxMi43NSwxMi43NXYzNC43NGMwLDcuMDEtNS43NCwxMi43NS0xMi43NSwxMi43NUgxOC4wNmMtNy4wMSwwLTEyLjc1LTUuNzQtMTIuNzUtMTIuNzVWMTguMDZjMC03LjAxLDUuNzQtMTIuNzUsMTIuNzUtMTIuNzVoMzQuNzRNNTIuOCwwSDE4LjA2QzguMSwwLDAsOC4xLDAsMTguMDZ2MzQuNzRjMCw5Ljk2LDguMSwxOC4wNiwxOC4wNiwxOC4wNmgzNC43NGM5Ljk2LDAsMTguMDYtOC4xLDE4LjA2LTE4LjA2VjE4LjA2YzAtOS45Ni04LjEtMTguMDYtMTguMDYtMTguMDZoMFoiLz4KICAgICAgPC9nPgogICAgICA8Zz4KICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0yMy41NiwzOS4wN2gzLjE4djMuOWMtLjI3LjA1LS41Ny4wOC0uOTIuMDgtMS4yMiwwLTIuMjgtLjMyLTMuMTctLjk4LS44OS0uNjUtMS41OS0xLjUyLTIuMDktMi42Mi0uNS0xLjEtLjc1LTIuMzUtLjc1LTMuNzVzLjI3LTIuNzIuODItMy44NmMuNTUtMS4xNSwxLjMzLTIuMDQsMi4zNS0yLjY4LDEuMDItLjY0LDIuMjItLjk2LDMuNi0uOTYsMS4xMiwwLDIuMTguMiwzLjE3LjU5LDEsLjQsMS45NS45OSwyLjg3LDEuNzhsLS4wNC04LjAzYy0uODItLjQ4LTEuODMtLjg2LTMuMDQtMS4xMy0xLjIxLS4yNy0yLjQzLS40LTMuNjUtLjQtMi43MywwLTUuMTcuNjQtNy4zMiwxLjkxLTIuMTYsMS4yOC0zLjgzLDMuMDItNS4wMyw1LjIyLTEuMiwyLjIxLTEuOCw0LjY1LTEuOCw3LjMycy42LDUuMjYsMS44LDcuNDRjMS4yLDIuMTgsMi44NywzLjg4LDUuMDMsNS4xMSwyLjE1LDEuMjIsNC42MSwxLjg0LDcuMzYsMS44NCwxLjU4LDAsMy4wNy0uMiw0LjQ4LS42MSwxLjQtLjQxLDIuNDUtLjkyLDMuMTQtMS41M3YtMTQuOTloLTkuOTh2Ni4zNVoiLz4KICAgICAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iNTAuNjQgMjEuNTUgNDQuNjMgMzEuOCA0NC42MyAyMS41NSAzNi44NyAyMS41NSAzNi44NyA0OS4zMiA0NC42MyA0OS4zMiA0NC42MyAzOC40OCA1MC4yNiA0OS4zMiA1OS4wNSA0OS4zMiA1MC44MSAzNC42NyA1OS4xMyAyMS41NSA1MC42NCAyMS41NSIvPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4='
+    }
+  };
+  const bibSrc = (pos, team) => `${BIB_DIR}${BIB[team][pos]}`;
+  // Temperament groups drive opposing-team detection in role/note/matchup
+  // text injection: a referenced position is on the opposing team when its
+  // group is opposite to currentPos's group (attack vs defend). Neutral (C)
+  // is never auto-classified as opposing - use the {OPP} token for an
+  // explicit "direct opponent" reference (needed for C-vs-C self-matchup).
+  const POS_GROUP = {
+    GS:'attack', GA:'attack', WA:'attack',
+    C:'neutral',
+    WD:'defend', GD:'defend', GK:'defend'
+  };
+  const isOpposingGroup = (code, refPos) => {
+    const a = POS_GROUP[code], b = POS_GROUP[refPos];
+    if (!a || !b || a === 'neutral' || b === 'neutral') return false;
+    return a !== b;
+  };
+  let currentTeam = 'fire';
+  let currentPos  = 'GS';
+
+  // ── Court geometry ─────────────────────────────────────────────────────────
+  const CX = 0.5, CY = 0.5, CW = 355.56, CBOT = 709.16;
+  const T1 = 234.05, T2 = 473.16, GR = 114.66;
+  const GCX = 178.28;
+
+  // ── Section 2: tracker state ───────────────────────────────────────────────
+  let currentDrag = null; // { type: 'ball'|'token', pos, team }
+  const TOKEN_R = 18;
+  // Starting positions per team. Each matchup pair shares a Y but is offset on
+  // X so both tokens are visible side by side. Ice team is fully mirrored:
+  // their GS/GA in the bottom (attacking) third, their GK/GD in the top
+  // (defending) third.
+  const TOKEN_STARTS = {
+    fire: {
+      GS: { x: 140, y: 70  },
+      GA: { x: 110, y: 175 },
+      WA: { x: 250, y: 320 },
+      C:  { x: 145, y: 355 },
+      WD: { x: 110, y: 420 },
+      GD: { x: 250, y: 540 },
+      GK: { x: 215, y: 640 },
+    },
+    ice: {
+      GS: { x: 140, y: 640 },
+      GA: { x: 110, y: 540 },
+      WA: { x: 250, y: 420 },
+      C:  { x: 215, y: 355 },
+      WD: { x: 110, y: 320 },
+      GD: { x: 250, y: 175 },
+      GK: { x: 215, y: 70  },
+    },
+  };
+  const tokenPos = { fire: {}, ice: {} };
+
+  // Per-team zone bounds for drag clamping. Fire is canonical; ice is mirrored
+  // (their attacking third is the bottom; their defending third is the top).
+  const ZONE_BOUNDS = {
+    fire: {
+      GS: { yMin: CY,   yMax: T1,   exTop: false, exBot: false },
+      GA: { yMin: CY,   yMax: T2,   exTop: false, exBot: false },
+      WA: { yMin: CY,   yMax: T2,   exTop: true,  exBot: false },
+      C:  { yMin: CY,   yMax: CBOT, exTop: true,  exBot: true  },
+      WD: { yMin: T1,   yMax: CBOT, exTop: false, exBot: true  },
+      GD: { yMin: T1,   yMax: CBOT, exTop: false, exBot: false },
+      GK: { yMin: T2,   yMax: CBOT, exTop: false, exBot: false },
+    },
+    ice: {
+      GS: { yMin: T2,   yMax: CBOT, exTop: false, exBot: false },
+      GA: { yMin: T1,   yMax: CBOT, exTop: false, exBot: false },
+      WA: { yMin: T1,   yMax: CBOT, exTop: false, exBot: true  },
+      C:  { yMin: CY,   yMax: CBOT, exTop: true,  exBot: true  },
+      WD: { yMin: CY,   yMax: T2,   exTop: true,  exBot: false },
+      GD: { yMin: CY,   yMax: T2,   exTop: false, exBot: false },
+      GK: { yMin: CY,   yMax: T1,   exTop: false, exBot: false },
+    },
+  };
+
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    // Vertical bib selectors - one column per team, flanking the court.
+    // Fire column: canonical order (GS top -> GK bottom).
+    // Ice column: reversed (GK top -> GS bottom) to mirror court layout.
+    const fireCol = document.getElementById('bib-col-fire');
+    const iceCol  = document.getElementById('bib-col-ice');
+    const buildTab = (code, team) => {
+      const btn = document.createElement('button');
+      btn.className   = `pos-tab ${team}-tab`;
+      btn.dataset.pos = code;
+      btn.dataset.team = team;
+      btn.innerHTML   = `<img id="tab-img-${team}-${code}" src="${bibSrc(code, team)}" alt="${code}">`;
+      btn.addEventListener('click', () => { setTeam(team); selectPos(code); });
+      return btn;
+    };
+    ORDER.forEach(code => fireCol.appendChild(buildTab(code, 'fire')));
+    [...ORDER].reverse().forEach(code => iceCol.appendChild(buildTab(code, 'ice')));
+
+    document.querySelectorAll('.thermo-ball').forEach(b =>
+      b.addEventListener('click', () => selectPos(b.dataset.pos)));
+
+    initThermoSlider();
+    initTrackerSection();
+    initCourtTools();
+    initCourtLock();
+    courtRotation = 90;
+    applyCourtTransform();
+    selectPos('GS');
+  }
+
+  // On coarse-pointer devices (touch / mobile), the court starts locked: a
+  // pulsing hint asks for a tap before any token-drag interactions are
+  // enabled. Tools (rotate/flip/snapshot) stay tappable through the lock.
+  function initCourtLock() {
+    const zoneCol = document.querySelector('.zone-col');
+    if (!zoneCol) return;
+    if (!matchMedia('(pointer: coarse)').matches) return;
+    zoneCol.classList.add('court-locked');
+    zoneCol.addEventListener('click', e => {
+      if (!zoneCol.classList.contains('court-locked')) return;
+      if (e.target.closest('.court-tools')) return;
+      zoneCol.classList.remove('court-locked');
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+  }
+
+  // ── Court rotate / flip / snapshot ────────────────────────────────────────
+  let courtRotation = 0;        // 0, 90, 180, 270
+  let courtFlipX    = 1;        // 1 or -1
+  let courtFlipY    = 1;        // 1 or -1
+
+  function applyCourtTransform() {
+    const stage = document.getElementById('court-svg');
+    const isLandscape = (courtRotation % 180) !== 0;
+    // When the court rotates to landscape, the SVG element is positioned
+    // absolutely + centred so the parent frame can size to the rotated
+    // visual instead of the original portrait layout box. The translate
+    // prefix is essential for centring inside a position:absolute context.
+    const centring = isLandscape ? 'translate(-50%, -50%) ' : '';
+    stage.style.transform =
+      `${centring}rotate(${courtRotation}deg) scaleX(${courtFlipX}) scaleY(${courtFlipY})`;
+    // Counter-transform on tokens + ball so bibs and netball graphic stay
+    // upright and readable regardless of how the court is oriented.
+    const counter = `scale(${courtFlipX} ${courtFlipY}) rotate(${-courtRotation})`;
+    document.querySelectorAll('.token-inner, .ball-inner').forEach(el =>
+      el.setAttribute('transform', counter));
+    // Frame swaps to landscape dimensions when the rotated visual is wider
+    // than tall (90° / 270°).
+    document.querySelector('.zone-col')?.classList.toggle('landscape', isLandscape);
+  }
+
+  function initCourtTools() {
+    document.getElementById('court-rotate').addEventListener('click', () => {
+      courtRotation = (courtRotation + 90) % 360;
+      applyCourtTransform();
+    });
+    document.getElementById('court-flip-h').addEventListener('click', () => {
+      // "Flip ends" — swap the two long ends of the court regardless of
+      // current orientation. In landscape that's a horizontal mirror; in
+      // portrait it's a vertical mirror. Either way, goal thirds swap.
+      const isLandscape = (courtRotation % 180) !== 0;
+      if (isLandscape) courtFlipX *= -1;
+      else             courtFlipY *= -1;
+      applyCourtTransform();
+    });
+    document.getElementById('court-snapshot').addEventListener('click', captureCourtSnapshot);
+  }
+
+  // Serialise the live court SVG (with all current tokens, ball, zones,
+  // and any rotate/flip transform) into a PNG and trigger a download.
+  // External href references are inlined as data URIs so the resulting
+  // PNG is fully self-contained.
+  async function captureCourtSnapshot() {
+    const svg = document.getElementById('court-svg');
+    const clone = svg.cloneNode(true);
+    // The live SVG carries an inline style.transform from applyCourtTransform
+    // ("translate(-50%, -50%) rotate(90deg)..."). When the clone is rendered
+    // standalone via new Image(), that CSS transform applies on top of our
+    // <g> wrap rotation — doubling the rotation and leaving the tokens'
+    // counter-rotation off by 180°. Strip it so only the wrap rotation acts.
+    clone.style.transform = '';
+    clone.style.transformOrigin = '';
+    // The ball uses <use href="#nb-stroke"> and <use href="#nb-fill">; both
+    // symbols live in thermo-svg's <defs>. Cross-SVG <use> resolves on the
+    // live page but breaks once we serialise the court alone — so copy the
+    // symbol definitions into the clone's <defs> before serialising.
+    const externalDefs = document.getElementById('thermo-svg')?.querySelector('defs');
+    let cloneDefs = clone.querySelector('defs');
+    if (!cloneDefs) {
+      cloneDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      clone.insertBefore(cloneDefs, clone.firstChild);
+    }
+    if (externalDefs) {
+      ['nb-stroke', 'nb-fill'].forEach(symId => {
+        if (clone.querySelector(`#${symId}`)) return;
+        const sym = externalDefs.querySelector(`#${symId}`);
+        if (sym) cloneDefs.appendChild(sym.cloneNode(true));
+      });
+    }
+    // Compose flip + rotate so the result lands inside a viewBox sized for
+    // the current orientation. Portrait viewBox = PW × PH; landscape (90° /
+    // 270°) swaps to PH × PW. SVG transform list reads left→right but applies
+    // right→left to a point, so flips appear to the right of the rotation
+    // (applied first to original content, then rotation maps into final box).
+    const PW = 356.56, PH = 709.66;
+    const isLandscapeCap = (courtRotation % 180) !== 0;
+    const vbW = isLandscapeCap ? PH : PW;
+    const vbH = isLandscapeCap ? PW : PH;
+    const xformParts = [];
+    switch (courtRotation) {
+      case 90:  xformParts.push(`translate(${PH}, 0) rotate(90)`); break;
+      case 180: xformParts.push(`translate(${PW}, ${PH}) rotate(180)`); break;
+      case 270: xformParts.push(`translate(0, ${PW}) rotate(-90)`); break;
+    }
+    if (courtFlipX === -1) xformParts.push(`translate(${PW}, 0) scale(-1, 1)`);
+    if (courtFlipY === -1) xformParts.push(`translate(0, ${PH}) scale(1, -1)`);
+    if (xformParts.length) {
+      const wrap = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      wrap.setAttribute('transform', xformParts.join(' '));
+      while (clone.firstChild) wrap.appendChild(clone.firstChild);
+      clone.appendChild(wrap);
+    }
+    clone.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
+    clone.setAttribute('width', vbW);
+    clone.setAttribute('height', vbH);
+    // Resolve every <image> href to a data URI so the rasteriser can find them
+    const images = clone.querySelectorAll('image');
+    for (const img of images) {
+      const href = img.getAttribute('href') || img.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+      if (!href || href.startsWith('data:')) continue;
+      try {
+        const res = await fetch(href);
+        const blob = await res.blob();
+        const dataUri = await new Promise(r => {
+          const fr = new FileReader();
+          fr.onload = () => r(fr.result);
+          fr.readAsDataURL(blob);
+        });
+        img.setAttribute('href', dataUri);
+      } catch (e) { /* ignore - will render blank */ }
+    }
+    const xml = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = () => {
+      const scale = 2; // 2x for crisp output
+      const canvas = document.createElement('canvas');
+      canvas.width = vbW * scale;
+      canvas.height = vbH * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `netball-court-${Date.now()}.png`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }, 'image/png');
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  }
+
+  // ── Thermometer slider ─────────────────────────────────────────────────────
+  const THERMO_Y     = { GS: 0.5,    GA: 113.5, WA: 234.05, C: 354.83, WD: 473.16, GD: 596.1, GK: 709.16 };
+  const THERMO_Y_ICE = { GS: 709.16, GA: 596.1, WA: 473.16, C: 354.83, WD: 234.05, GD: 113.5, GK: 0.5  };
+  const getActiveThermoY = () => currentTeam === 'ice' ? THERMO_Y_ICE : THERMO_Y;
+  let thermoDragging = false;
+
+  function thermoSvgPt(e) {
+    const svg = document.getElementById('thermo-svg');
+    const pt  = svg.createSVGPoint();
+    const src = e.touches ? e.touches[0] : e;
+    pt.x = src.clientX; pt.y = src.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  // Bib colour for a given position+team. Fire uses the canonical position
+  // colour; ice uses the matchup partner's colour (so ice GS = purple to
+  // match its bib, ice GK = red to match its bib, etc.).
+  function bibColour(pos, team) {
+    return team === 'ice' ? POS[POS[pos].opponent].colour : POS[pos].colour;
+  }
+
+  function moveSliderTo(cy) {
+    document.getElementById('thermo-slider').setAttribute('transform', `translate(0, ${cy})`);
+    const colour = bibColour(currentPos, currentTeam);
+    document.getElementById('thermo-slider-ball').setAttribute('fill', colour);
+    // Mercury column fills from the marker's Y down to the bottom of the tube
+    // and is tinted in the current bib colour (matches the selected bib).
+    const mercury = document.getElementById('thermo-mercury');
+    if (mercury) {
+      mercury.setAttribute('y', cy);
+      mercury.setAttribute('height', Math.max(0, 709.16 - cy));
+      mercury.setAttribute('fill', colour);
+    }
+  }
+
+  function moveSliders() {
+    moveSliderTo(getActiveThermoY()[currentPos]);
+  }
+
+  function onThermoMove(e) {
+    if (!thermoDragging) return;
+    if (e.cancelable) e.preventDefault();
+    const pt = thermoSvgPt(e);
+    const y  = Math.max(0.5, Math.min(709.16, pt.y));
+    // Move slider freely
+    document.getElementById('thermo-slider').setAttribute('transform', `translate(0, ${y})`);
+    // Snap to nearest position using the active team's Y mapping (fire is
+    // canonical, ice is mirrored so the same gradient colour at a Y still
+    // resolves to the position whose bib is that colour).
+    const yMap = getActiveThermoY();
+    const nearest = ORDER.reduce((a, b) =>
+      Math.abs(yMap[b] - y) < Math.abs(yMap[a] - y) ? b : a);
+    if (nearest !== currentPos) {
+      currentPos = nearest;
+      document.getElementById('thermo-slider-ball').setAttribute('fill', bibColour(nearest, currentTeam));
+      render();
+    }
+  }
+
+  function endThermoDrag() {
+    if (!thermoDragging) return;
+    thermoDragging = false;
+    document.getElementById('thermo-slider').style.cursor = 'grab';
+    moveSliders();
+  }
+
+  function initThermoSlider() {
+    const slider = document.getElementById('thermo-slider');
+    slider.addEventListener('mousedown', e => {
+      e.preventDefault();
+      thermoDragging = true;
+      slider.style.cursor = 'grabbing';
+    });
+    slider.addEventListener('touchstart', e => {
+      e.preventDefault();
+      thermoDragging = true;
+    }, { passive: false });
+    document.addEventListener('mousemove', onThermoMove);
+    document.addEventListener('touchmove', onThermoMove, { passive: false });
+    document.addEventListener('mouseup',  endThermoDrag);
+    document.addEventListener('touchend', endThermoDrag);
+  }
+
+  // ── Section 1 ──────────────────────────────────────────────────────────────
+  const ZONE_DEFS = {
+    GS: { y1: CY,   y2: T1,   exTop: false, exBot: false },
+    GA: { y1: CY,   y2: T2,   exTop: false, exBot: false },
+    WA: { y1: CY,   y2: T2,   exTop: true,  exBot: false },
+    C:  { y1: CY,   y2: CBOT, exTop: true,  exBot: true  },
+    WD: { y1: T1,   y2: CBOT, exTop: false, exBot: true  },
+    GD: { y1: T1,   y2: CBOT, exTop: false, exBot: false },
+    GK: { y1: T2,   y2: CBOT, exTop: false, exBot: false },
+  };
+  // ICE team: zones are mirrored (GS attacks bottom, GK defends top)
+  const ZONE_DEFS_ICE = {
+    GS: { y1: T2,   y2: CBOT, exTop: false, exBot: false },
+    GA: { y1: T1,   y2: CBOT, exTop: false, exBot: false },
+    WA: { y1: T1,   y2: CBOT, exTop: false, exBot: true  },
+    C:  { y1: CY,   y2: CBOT, exTop: true,  exBot: true  },
+    WD: { y1: CY,   y2: T2,   exTop: true,  exBot: false },
+    GD: { y1: CY,   y2: T2,   exTop: false, exBot: false },
+    GK: { y1: CY,   y2: T1,   exTop: false, exBot: false },
+  };
+
+  // Convert a hex colour to a low-opacity rgba string for zone tinting.
+  function hexToRgba(hex, a) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  // Fill the selected position's allowed zone with the full bib colour
+   // (matches the bib of the active team - ice WD is yellow, not teal).
+   // Goal-circle exclusions stay white so they cut cleanly out of the fill.
+  function drawCourtZone(posCode) {
+    const z    = (currentTeam === 'ice' ? ZONE_DEFS_ICE : ZONE_DEFS)[posCode];
+    const fill = bibColour(posCode, currentTeam);
+    let svg = '';
+    svg += `<rect x="${CX}" y="${z.y1}" width="${CW}" height="${z.y2 - z.y1}" fill="${fill}"/>`;
+    if (z.exTop)
+      svg += `<circle cx="${GCX}" cy="${CY}" r="${GR}" fill="white"/>`;
+    if (z.exBot)
+      svg += `<circle cx="${GCX}" cy="${CBOT}" r="${GR}" fill="white"/>`;
+    document.getElementById('zone-overlay').innerHTML = svg;
+  }
+
+  function setTeam(team) {
+    currentTeam = team;
+    document.querySelectorAll('.team-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.team-btn.${team}`).classList.add('active');
+    moveSliders();
+    render();
+  }
+
+  function selectPos(code) {
+    currentPos = code;
+    if (!thermoDragging) moveSliders();
+    render();
+  }
+
+  function bibImg(code, team) {
+    return `<img src="${bibSrc(code, team)}" class="inline-bib" alt="${code}" title="${POS[code].name}">`;
+  }
+
+  // Role/note: a referenced position renders in the opposing team's bib when
+  // it sits in the opposite temperament group from currentPos (attackers vs
+  // defenders); allies and neutral refs render in the CURRENT team's bib so
+  // the inline icons match the team perspective the user is viewing. The
+  // {OPP} token is an explicit "direct opponent in opposing team's bib".
+  function injectBadges(text) {
+    const oppTeam = currentTeam === 'fire' ? 'ice' : 'fire';
+    const oppCode = POS[currentPos].opponent;
+    return text.replace(/\{([A-Z]+)\}/g, (_, code) => {
+      if (code === 'OPP') return bibImg(oppCode, oppTeam);
+      if (!POS[code]) return code;
+      const team = isOpposingGroup(code, currentPos) ? oppTeam : currentTeam;
+      return bibImg(code, team);
+    });
+  }
+
+  // Matchup: primary pos = current team; direct opponent or any opposing-
+  // group position = opposing team; allies/neutral = current team. {OPP} is
+  // the explicit direct-opponent token (lets C's matchup distinguish self
+  // from the opposing C, which share the same code).
+  function injectMatchup(text) {
+    const oppTeam = currentTeam === 'fire' ? 'ice' : 'fire';
+    const oppCode = POS[currentPos].opponent;
+    return text.replace(/\{([A-Z]+)\}/g, (_, code) => {
+      if (code === 'OPP') return bibImg(oppCode, oppTeam);
+      if (!POS[code]) return code;
+      if (code === currentPos) return bibImg(code, currentTeam);
+      if ((code === oppCode && oppCode !== currentPos) || isOpposingGroup(code, currentPos)) {
+        return bibImg(code, oppTeam);
+      }
+      return bibImg(code, currentTeam);
+    });
+  }
+
+  // Map p.temp -> role label used in matchup band heading
+  const ROLE_LABEL = { attack: 'ATTACKER', defend: 'DEFENDER', both: 'MIDCOURT' };
+
+  function render() {
+    const p        = POS[currentPos];
+    const opponent = POS[p.opponent];
+    const team     = currentTeam;
+
+    drawCourtZone(currentPos);
+    document.getElementById('zone-caption').textContent = p.zoneCaption;
+
+    // Team class drives motion direction (fire boils/heats, ice freezes/cools),
+    // marker glow tint, and the matchup-band side emphasis.
+    document.body.classList.toggle('team-active-fire', team === 'fire');
+    document.body.classList.toggle('team-active-ice',  team === 'ice');
+
+    // Highlight selection across bib columns and on-court tokens
+    document.querySelectorAll('.pos-tab, .player-token').forEach(b => {
+      const isActiveSelf = b.dataset.team === team && b.dataset.pos === currentPos;
+      b.classList.toggle('active', isActiveSelf);
+    });
+
+    // Matchup band: sides are FIXED (fire on left, ice on right). They show the
+    // matchup PAIR - one position per team - regardless of which is selected.
+    // Active team's side gets a zoom + flame/frost emphasis (in CSS).
+    const fireSidePos = team === 'fire' ? currentPos : p.opponent;
+    const iceSidePos  = team === 'ice'  ? currentPos : p.opponent;
+    const fireSideP   = POS[fireSidePos];
+    const iceSideP    = POS[iceSidePos];
+
+    document.getElementById('fire-badge').src = bibSrc(fireSidePos, 'fire');
+    document.getElementById('fire-team-role').textContent = `FIRE TEAM ${ROLE_LABEL[fireSideP.temp]}`;
+    document.getElementById('fire-pos-name').textContent  = `${fireSidePos} is for ${fireSideP.name.toUpperCase()}`;
+    document.getElementById('fire-tagline').textContent   = fireSideP.tagline;
+
+    document.getElementById('ice-badge').src = bibSrc(iceSidePos, 'ice');
+    document.getElementById('ice-team-role').textContent = `ICE TEAM ${ROLE_LABEL[iceSideP.temp]}`;
+    document.getElementById('ice-pos-name').textContent  = `${iceSidePos} is for ${iceSideP.name.toUpperCase()}`;
+    document.getElementById('ice-tagline').textContent   = iceSideP.tagline;
+
+    // Detail block + matchup paragraph (tinted by opposing team)
+    document.getElementById('pos-role').innerHTML        = injectBadges(p.role);
+    document.getElementById('pos-zone-text').textContent = p.zone;
+    document.getElementById('pos-note').innerHTML        = injectBadges(p.note);
+
+    const opponentSection = document.querySelector('.opponent-section');
+    opponentSection.classList.toggle('opp-ice',  team === 'fire');
+    opponentSection.classList.toggle('opp-fire', team === 'ice');
+    document.getElementById('matchup-text').innerHTML = injectMatchup(p.matchup);
+  }
+
+  // ── Section 2: tracker ─────────────────────────────────────────────────────
+  function initTrackerSection() {
+    const tokenGroup = document.getElementById('player-tokens');
+    const ns = 'http://www.w3.org/2000/svg';
+
+    const buildToken = (pos, team) => {
+      const start = TOKEN_STARTS[team][pos];
+      tokenPos[team][pos] = { x: start.x, y: start.y };
+
+      const g = document.createElementNS(ns, 'g');
+      g.id = `token-${team}-${pos}`;
+      g.setAttribute('transform', `translate(${start.x},${start.y})`);
+      g.setAttribute('class', `player-token ${team}-token`);
+      g.dataset.pos  = pos;
+      g.dataset.team = team;
+      g.style.cursor = 'grab';
+      g.style.touchAction = 'none';
+
+      // Inner group keeps the bib upright when the court rotates / flips.
+      // applyCourtTransform() sets a counter-transform on .token-inner.
+      const inner = document.createElementNS(ns, 'g');
+      inner.setAttribute('class', 'token-inner');
+      const img = document.createElementNS(ns, 'image');
+      img.setAttribute('href', bibSrc(pos, team));
+      img.setAttribute('x', -TOKEN_R);
+      img.setAttribute('y', -TOKEN_R);
+      img.setAttribute('width',  TOKEN_R * 2);
+      img.setAttribute('height', TOKEN_R * 2);
+      img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      inner.appendChild(img);
+      g.appendChild(inner);
+
+      g.addEventListener('mousedown',  e => startDrag(e, 'token', pos, team));
+      g.addEventListener('touchstart', e => startDrag(e, 'token', pos, team), { passive: false });
+      return g;
+    };
+
+    // Stack ice tokens first so fire tokens render on top by default
+    ORDER.forEach(pos => tokenGroup.appendChild(buildToken(pos, 'ice')));
+    ORDER.forEach(pos => tokenGroup.appendChild(buildToken(pos, 'fire')));
+
+    const ball = document.getElementById('tracker-ball');
+    ball.addEventListener('mousedown',  e => startDrag(e, 'ball', null, null));
+    ball.addEventListener('touchstart', e => startDrag(e, 'ball', null, null), { passive: false });
+
+    document.addEventListener('mousemove', onTrackerMove);
+    document.addEventListener('touchmove', onTrackerMove, { passive: false });
+    document.addEventListener('mouseup',   onTrackerEnd);
+    document.addEventListener('touchend',  onTrackerEnd);
+
+    moveTrackerBall(178.28, 354.83);
+  }
+
+  function trackerSvgPt(e) {
+    const svg = document.getElementById('court-svg');
+    const pt  = svg.createSVGPoint();
+    const src = e.touches ? e.touches[0] : e;
+    pt.x = src.clientX; pt.y = src.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  function startDrag(e, type, pos, team) {
+    e.preventDefault();
+    e.stopPropagation();
+    currentDrag = { type, pos, team };
+    if (type === 'token') {
+      // Mousedown on a token also selects it (click-without-drag still
+      // counts as a selection).
+      if (team !== currentTeam) setTeam(team);
+      if (pos !== currentPos)   selectPos(pos);
+      const el = document.getElementById(`token-${team}-${pos}`);
+      el.style.cursor = 'grabbing';
+      document.getElementById('player-tokens').appendChild(el);
+    } else {
+      document.getElementById('tracker-ball').style.cursor = 'grabbing';
+    }
+  }
+
+  function onTrackerMove(e) {
+    if (!currentDrag) return;
+    if (e.cancelable) e.preventDefault();
+    const { x, y } = trackerSvgPt(e);
+    if (currentDrag.type === 'ball') {
+      moveTrackerBall(x, y);
+    } else {
+      moveToken(x, y, currentDrag.pos, currentDrag.team);
+    }
+  }
+
+  function onTrackerEnd() {
+    if (!currentDrag) return;
+    if (currentDrag.type === 'token') {
+      const el = document.getElementById(`token-${currentDrag.team}-${currentDrag.pos}`);
+      if (el) el.style.cursor = 'grab';
+    } else {
+      document.getElementById('tracker-ball').style.cursor = 'grab';
+    }
+    currentDrag = null;
+  }
+
+  function moveTrackerBall(x, y) {
+    x = Math.max(0.5, Math.min(356.06, x));
+    y = Math.max(0.5, Math.min(709.16, y));
+    document.getElementById('tracker-ball').setAttribute('transform', `translate(${x},${y})`);
+  }
+
+  function moveToken(x, y, pos, team) {
+    const clamped = clampToZone(x, y, pos, team);
+    tokenPos[team][pos] = clamped;
+    document.getElementById(`token-${team}-${pos}`)
+      .setAttribute('transform', `translate(${clamped.x},${clamped.y})`);
+  }
+
+  function clampToZone(x, y, pos, team) {
+    const b = ZONE_BOUNDS[team][pos];
+    // Clamp to court boundary and third bounds
+    x = Math.max(0.5, Math.min(356.06, x));
+    y = Math.max(b.yMin, Math.min(b.yMax, y));
+    // Skip circle exclusion when on sideline
+    if (x > 1.5 && x < 355.06) {
+      if (b.exTop) {
+        const d = Math.hypot(x - GCX, y - CY);
+        if (d < GR) {
+          const a = Math.atan2(y - CY, x - GCX);
+          x = GCX + GR * Math.cos(a);
+          y = Math.max(b.yMin, CY + GR * Math.sin(a));
+          x = Math.max(0.5, Math.min(356.06, x));
+        }
+      }
+      if (b.exBot) {
+        const d = Math.hypot(x - GCX, y - CBOT);
+        if (d < GR) {
+          const a = Math.atan2(y - CBOT, x - GCX);
+          x = GCX + GR * Math.cos(a);
+          y = Math.min(b.yMax, CBOT + GR * Math.sin(a));
+          x = Math.max(0.5, Math.min(356.06, x));
+        }
+      }
+    }
+    return { x, y };
+  }
+</script>
+
+</body>
+</html>

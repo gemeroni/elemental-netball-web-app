@@ -11,33 +11,49 @@ interface BibSvgProps {
 let bibCounter = 0;
 
 function sanitiseSvg(raw: string, uid: string): string {
+  // 1. Strip XML / DOCTYPE declarations
   let text = raw
     .replace(/<\?xml[^?]*\?>/g, "")
     .replace(/<!DOCTYPE[^>]*>/gi, "")
     .trim();
 
-  const classNames = new Set<string>();
-  const classRe = /\.(cls-[\w-]+)\s*\{/g;
-  let m: RegExpExecArray | null;
-  while ((m = classRe.exec(text)) !== null) classNames.add(m[1]);
+  // 2. Collect all cls-* names that appear in the <style> block
+  const classes = new Set<string>();
+  text.replace(/\.(cls-[\w]+)[\s{,]/g, (_, c: string) => {
+    classes.add(c);
+    return _;
+  });
 
-  classNames.forEach((cls) => {
-    const scoped = `${cls}-${uid}`;
-    text = text.replace(new RegExp(`\\.${cls}(?=[\\s{,])`, "g"), `.${scoped}`);
-    text = text.replace(new RegExp(`class="${cls}"`, "g"), `class="${scoped}"`);
-    text = text.replace(
-      new RegExp(`class="([^"]*?)\\b${cls}\\b([^"]*?)"`, "g"),
-      `class="$1${scoped}$2"`
-    );
+  if (classes.size === 0) return text;
+
+  // 3. Scope CSS selectors — single pass, won't touch class="" attributes
+  //    Matches .cls-N followed by whitespace, { or ,
+  text = text.replace(/\.(cls-[\w]+)(?=[\s{,])/g, (_, c: string) =>
+    `.${c}-${uid}`
+  );
+
+  // 4. Scope class attribute values — split each token, only remap known cls-* names
+  //    This runs AFTER step 3 so the two passes can't interfere
+  text = text.replace(/\bclass="([^"]*)"/g, (_, val: string) => {
+    const scoped = val
+      .split(/\s+/)
+      .map((t) => (classes.has(t) ? `${t}-${uid}` : t))
+      .join(" ");
+    return `class="${scoped}"`;
   });
 
   return text;
 }
 
-export const BibSvg: React.FC<BibSvgProps> = ({ code, team, className = "", style = {} }) => {
+export const BibSvg: React.FC<BibSvgProps> = ({
+  code,
+  team,
+  className = "",
+  style = {},
+}) => {
   const [svgContent, setSvgContent] = useState<string | null>(null);
   const [error, setError] = useState(false);
-  const [uid] = useState(() => `bib${++bibCounter}`);
+  const [uid] = useState(() => `b${++bibCounter}`);
 
   const pos = getPositionByCode(code);
   const filename = pos
@@ -52,16 +68,24 @@ export const BibSvg: React.FC<BibSvgProps> = ({ code, team, className = "", styl
     setSvgContent(null);
     setError(false);
 
+    let cancelled = false;
     fetch(src)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.text();
       })
       .then((text) => {
+        if (cancelled) return;
         if (!text.includes("<svg")) throw new Error("Not an SVG");
         setSvgContent(sanitiseSvg(text, uid));
       })
-      .catch(() => setError(true));
+      .catch(() => {
+        if (!cancelled) setError(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [src, filename, uid]);
 
   if (error || !svgContent) {
@@ -75,7 +99,6 @@ export const BibSvg: React.FC<BibSvgProps> = ({ code, team, className = "", styl
           ...style,
           width: "100%",
           height: "100%",
-          aspectRatio: "3/4",
           backgroundColor: isFire ? hex : "#ffffff",
           color: isFire ? "#ffffff" : hex,
           border: isFire ? "2px solid #b3b3b3" : `4px solid ${hex}`,
@@ -90,7 +113,7 @@ export const BibSvg: React.FC<BibSvgProps> = ({ code, team, className = "", styl
 
   return (
     <div
-      className={`[&>svg]:w-full [&>svg]:h-full [&>svg]:block ${className}`}
+      className={`w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:block ${className}`}
       style={style}
       dangerouslySetInnerHTML={{ __html: svgContent }}
       data-testid={`bib-svg-${code}-${team}`}
