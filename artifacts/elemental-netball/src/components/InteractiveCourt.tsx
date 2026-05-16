@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue } from "framer-motion";
-import { courtLinesRaw } from "@/assets/zoneSvgs";
 import { POSITIONS } from "@/data/positions";
 import type { Team } from "@/data/positions";
 import { BibSvg } from "./BibSvg";
@@ -18,7 +17,6 @@ function inlineSvg(raw: string) {
     .replace(/\s+class="[^"]*"/g, "");
 }
 
-const COURT_SVG   = stripSvgMeta(courtLinesRaw);
 const OUTLINE_SVG = stripSvgMeta(netballOutlineRaw).replace(/<style[\s\S]*?<\/style>/gi, "");
 
 // ── Token dimensions ──────────────────────────────────────────────────────────
@@ -344,57 +342,12 @@ export const InteractiveCourt: React.FC = () => {
               style={{ opacity: 0.55, objectFit: "fill" }}
             />
 
-            {/* ── Fire goal hoop glow (top) ── */}
-            <motion.div
-              className="absolute pointer-events-none"
-              style={{ top: "1.5%", left: "50%", translateX: "-50%", width: 20, height: 20, borderRadius: "50%" }}
-              animate={{
-                boxShadow: [
-                  "0 0 6px 3px rgba(255,100,0,0.65), 0 0 18px 8px rgba(255,60,0,0.30)",
-                  "0 0 12px 6px rgba(255,170,0,0.85), 0 0 28px 14px rgba(255,80,0,0.45)",
-                  "0 0 8px 4px rgba(255,120,0,0.70), 0 0 22px 10px rgba(255,50,0,0.35)",
-                  "0 0 14px 7px rgba(255,190,0,0.90), 0 0 32px 16px rgba(255,90,0,0.50)",
-                  "0 0 6px 3px rgba(255,100,0,0.65), 0 0 18px 8px rgba(255,60,0,0.30)",
-                ],
-                background: [
-                  "rgba(255,90,0,0.75)",
-                  "rgba(255,170,0,0.95)",
-                  "rgba(255,100,0,0.80)",
-                  "rgba(255,190,0,1.00)",
-                  "rgba(255,90,0,0.75)",
-                ],
-              }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            />
-
-            {/* ── Frost goal hoop glow (bottom) ── */}
-            <motion.div
-              className="absolute pointer-events-none"
-              style={{ bottom: "1.5%", left: "50%", translateX: "-50%", width: 20, height: 20, borderRadius: "50%" }}
-              animate={{
-                boxShadow: [
-                  "0 0 6px 3px rgba(100,200,255,0.55), 0 0 18px 8px rgba(30,140,230,0.25)",
-                  "0 0 12px 6px rgba(160,230,255,0.80), 0 0 28px 14px rgba(80,180,255,0.40)",
-                  "0 0 8px 4px rgba(120,210,255,0.65), 0 0 22px 10px rgba(50,160,240,0.30)",
-                  "0 0 10px 5px rgba(180,240,255,0.85), 0 0 26px 13px rgba(100,200,255,0.45)",
-                  "0 0 6px 3px rgba(100,200,255,0.55), 0 0 18px 8px rgba(30,140,230,0.25)",
-                ],
-                background: [
-                  "rgba(80,180,255,0.70)",
-                  "rgba(180,235,255,0.95)",
-                  "rgba(100,200,255,0.80)",
-                  "rgba(200,240,255,1.00)",
-                  "rgba(80,180,255,0.70)",
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-            />
-
-            {/* White court lines overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-              style={{ opacity: 0.30 }}
-              dangerouslySetInnerHTML={{ __html: COURT_SVG }}
+            {/* ── White court lines (aligned 1:1 with Spectrum_Court.svg) ── */}
+            <img
+              src="/assets/svg/White_Court.svg"
+              aria-hidden
+              className="absolute inset-0 w-full h-full pointer-events-none select-none"
+              style={{ opacity: 0.45, objectFit: "fill" }}
             />
 
             {/* Fire players */}
