@@ -295,7 +295,7 @@ export const InteractiveCourt: React.FC = () => {
         <div className="flex items-center gap-1">
           <span className="text-[20px]">🔥</span>
           <div className="text-left">
-            <p className="text-[11px] font-black uppercase tracking-wider text-[#E53935] leading-none">Fire</p>
+            <p className="font-black uppercase tracking-wider text-[#E53935] text-[14px]">Fire</p>
             <p className="text-[9px] text-white/35 leading-none mt-0.5">attacks ↑</p>
           </div>
         </div>
@@ -309,10 +309,10 @@ export const InteractiveCourt: React.FC = () => {
 
         <div className="flex items-center gap-1">
           <div className="text-right">
-            <p className="text-[11px] font-black uppercase tracking-wider text-[#1E88E5] leading-none">Ice</p>
+            <p className="font-black uppercase tracking-wider text-[#1E88E5] text-[14px]">Ice</p>
             <p className="text-[9px] text-white/35 leading-none mt-0.5">attacks ↓</p>
           </div>
-          <span className="text-[20px]">❄️</span>
+          <span className="text-[20px]">🧊</span>
         </div>
       </div>
       {/* ── Court ── */}
@@ -415,7 +415,7 @@ export const InteractiveCourt: React.FC = () => {
                 >
                   {selected!.team} · {selectedPos.name}
                 </p>
-                <p className="text-[10px] text-white/45 leading-snug mt-0.5 line-clamp-2">
+                <p className="text-white/45 mt-0.5 line-clamp-2 text-[11px]">
                   {selectedPos.zoneCaption}
                 </p>
               </div>
