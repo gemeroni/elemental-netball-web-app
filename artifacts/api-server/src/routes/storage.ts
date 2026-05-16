@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { Readable } from "stream";
-import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
 
 function parseUploadBody(body: unknown): { name: string; size: number; contentType: string } | null {
@@ -51,7 +51,9 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
   try {
     const raw = req.params.filePath;
     const filePath = Array.isArray(raw) ? raw.join("/") : raw;
+
     const file = await objectStorageService.searchPublicObject(filePath);
+
     if (!file) {
       res.status(404).json({ error: "File not found" });
       return;

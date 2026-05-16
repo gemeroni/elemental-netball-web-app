@@ -14,7 +14,7 @@ export const BibSvg: React.FC<BibSvgProps> = ({ code, team, className = "", styl
   
   const pos = getPositionByCode(code);
   const filename = pos ? (team === "Fire" ? `${pos.fireColorName}_${code}_${team}.svg` : `${pos.iceColorName}_${code}_${team}.svg`) : "";
-  const src = `/api/storage/public-objects/${filename}`;
+  const src = `/assets/svg/${filename}`;
 
   useEffect(() => {
     if (!filename) return;
