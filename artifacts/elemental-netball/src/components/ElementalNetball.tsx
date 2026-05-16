@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BibSvg } from "./BibSvg";
+import { CourtZone } from "./CourtZone";
 import { POSITIONS, getPositionByCode } from "@/data/positions";
 import type { Team } from "@/data/positions";
 
@@ -189,6 +190,14 @@ export const ElementalNetball: React.FC = () => {
           </div>
         </div>
 
+        {/* ── Court Zone Diagram ───────────────────────────────── */}
+        <CourtZone
+          posCode={activePos}
+          posName={pos.name}
+          zoneCaption={pos.zoneCaption}
+          accentHex={activeHex}
+        />
+
         {/* ── Position Details ──────────────────────────────── */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -206,16 +215,6 @@ export const ElementalNetball: React.FC = () => {
               </h3>
               <p className="text-sm text-foreground leading-relaxed">
                 {pos.role}
-              </p>
-            </section>
-
-            {/* Zone */}
-            <section className="bg-card rounded-2xl border border-border p-4">
-              <h3 className="text-[10px] uppercase tracking-widest font-black text-muted-foreground mb-2">
-                Zone
-              </h3>
-              <p className="text-sm text-foreground leading-relaxed">
-                {pos.zoneCaption}
               </p>
             </section>
 
