@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ZONE_SVGS, ICE_ZONE_SVGS } from "@/assets/zoneSvgs";
+import { ZONE_SVGS, ICE_ZONE_SVGS, courtLinesRaw } from "@/assets/zoneSvgs";
 
 import redThermRaw    from "@/assets/svg/Red_Thermometer.svg?raw";
 import orangeThermRaw from "@/assets/svg/Orange_Thermometer.svg?raw";
@@ -31,7 +31,11 @@ const HEX_TO_THERM: Record<string, string> = {
   "#0052b3": processThermSvg(blueThermRaw),
   "#663399": processThermSvg(purpleThermRaw),
 };
-
+// Strip XML/DOCTYPE from the court lines SVG once at module load
+const COURT_LINES = courtLinesRaw
+  .replace(/<\?xml[^?]*\?>/g, "")
+  .replace(/<!DOCTYPE[^>]*>/gi, "")
+  .trim();
 
 interface CourtZoneProps {
   posCode: string;
@@ -95,13 +99,15 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
           <div
             className="relative overflow-hidden flex-shrink-0"
             style={{
-              aspectRatio: "1356 / 2600",
+              aspectRatio: "356 / 709",
               width: 120,
               background: "#0c0c12",
               boxShadow: `0 0 0 1px ${hex}20, 0 8px 32px rgba(0,0,0,0.6)`,
             }}
           >
             {/* ── Layer 1: Zone colour fill + bloom glow ──────────── */}
+            {/* Ice zones are the vertical mirror of Fire zones — scaleY(-1) flips  */}
+            {/* the fill to the correct end without needing separate Ice SVG assets. */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={`zone-${posCode}-${team}`}
@@ -117,16 +123,11 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
               />
             </AnimatePresence>
 
-            {/* ── Layer 2: White_Court.svg lines (1:1 geometry match) ── */}
-            <img
-              src="/assets/svg/White_Court.svg"
-              aria-hidden
-              className="absolute inset-0 w-full h-full pointer-events-none select-none"
-              style={{
-                opacity: 0.85,
-                objectFit: "fill",
-                filter: "drop-shadow(0 0 1px rgba(255,255,255,0.6))",
-              }}
+            {/* ── Layer 2: White court lines overlay ──────────────── */}
+            <div
+              className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+              style={{ opacity: 0.75, mixBlendMode: "screen" }}
+              dangerouslySetInnerHTML={{ __html: COURT_LINES }}
             />
           </div>
 
