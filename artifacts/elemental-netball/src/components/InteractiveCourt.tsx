@@ -2,14 +2,26 @@ import React, { useRef, useEffect, useState, useCallback } from "react";
 import { motion, useMotionValue } from "framer-motion";
 import { courtLinesRaw } from "@/assets/zoneSvgs";
 import { POSITIONS } from "@/data/positions";
+import type { Team } from "@/data/positions";
+import { BibSvg } from "./BibSvg";
+import netballRaw from "@/assets/svg/Netball.svg?raw";
 
+// ── Pre-process SVGs once at module load ─────────────────────────────────────
 const COURT_SVG = courtLinesRaw
   .replace(/<\?xml[^?]*\?>/g, "")
   .replace(/<!DOCTYPE[^>]*>/gi, "")
   .trim();
 
-const R_PLAYER = 18;
-const R_BALL = 13;
+const BALL_SVG = netballRaw
+  .replace(/<\?xml[^?]*\?>/g, "")
+  .replace(/<!DOCTYPE[^>]*>/gi, "")
+  .trim();
+
+// ── Token dimensions (px) ────────────────────────────────────────────────────
+// Bibs have a portrait ratio — match the natural bib shape.
+const BIB_W = 28;
+const BIB_H = 34;
+const BALL_SIZE = 26;
 
 // ── Zone rects in normalised [0,1] court space (y=0 = top) ─────────────────
 // Fire attacks toward the TOP of the court (y → 0).
@@ -33,7 +45,7 @@ const ICE_ZONES: Record<string, ZoneRect> = Object.fromEntries(
   ])
 );
 
-// ── Starting positions [normX, normY] ───────────────────────────────────────
+// ── Starting positions [normX, normY] ────────────────────────────────────────
 const FIRE_INIT: Record<string, [number, number]> = {
   GS: [0.30, 0.12],
   GA: [0.54, 0.22],
@@ -54,11 +66,11 @@ const ICE_INIT: Record<string, [number, number]> = {
   GK: [0.72, 0.14],
 };
 
-// ── Player token ─────────────────────────────────────────────────────────────
+// ── Player token (bib SVG) ────────────────────────────────────────────────────
 interface TokenProps {
   code: string;
+  team: Team;
   hex: string;
-  textHex?: string;
   initNorm: [number, number];
   zone: ZoneRect;
   courtW: number;
@@ -67,7 +79,7 @@ interface TokenProps {
 }
 
 const PlayerToken: React.FC<TokenProps> = ({
-  code, hex, initNorm, zone, courtW, courtH, resetKey,
+  code, team, hex, initNorm, zone, courtW, courtH, resetKey,
 }) => {
   const x = useMotionValue(initNorm[0] * courtW);
   const y = useMotionValue(initNorm[1] * courtH);
@@ -78,13 +90,10 @@ const PlayerToken: React.FC<TokenProps> = ({
   }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clamp = useCallback(() => {
-    const r = R_PLAYER;
-    const minX = zone.x[0] * courtW + r;
-    const maxX = zone.x[1] * courtW - r;
-    const minY = zone.y[0] * courtH + r;
-    const maxY = zone.y[1] * courtH - r;
-    x.set(Math.max(minX, Math.min(maxX, x.get())));
-    y.set(Math.max(minY, Math.min(maxY, y.get())));
+    const rx = BIB_W / 2;
+    const ry = BIB_H / 2;
+    x.set(Math.max(zone.x[0] * courtW + rx, Math.min(zone.x[1] * courtW - rx, x.get())));
+    y.set(Math.max(zone.y[0] * courtH + ry, Math.min(zone.y[1] * courtH - ry, y.get())));
   }, [zone, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (courtW === 0) return null;
@@ -94,46 +103,27 @@ const PlayerToken: React.FC<TokenProps> = ({
       drag
       dragMomentum={false}
       onDrag={clamp}
-      whileDrag={{ scale: 1.22 }}
+      whileDrag={{ scale: 1.2, zIndex: 50 }}
       style={{
         x,
         y,
         position: "absolute",
-        top: -R_PLAYER,
-        left: -R_PLAYER,
-        width: R_PLAYER * 2,
-        height: R_PLAYER * 2,
+        top: -(BIB_H / 2),
+        left: -(BIB_W / 2),
+        width: BIB_W,
+        height: BIB_H,
         touchAction: "none",
-        background: `radial-gradient(circle at 38% 35%, ${hex}dd 0%, ${hex} 100%)`,
-        boxShadow: `0 2px 10px ${hex}99, 0 0 0 1.5px rgba(255,255,255,0.2)`,
         zIndex: 10,
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        filter: `drop-shadow(0 2px 5px ${hex}99)`,
         cursor: "grab",
-        userSelect: "none",
       }}
     >
-      <span
-        style={{
-          fontFamily: "inherit",
-          fontWeight: 900,
-          fontSize: 9,
-          color: "#fff",
-          lineHeight: 1,
-          letterSpacing: 0,
-          pointerEvents: "none",
-          textShadow: "0 1px 2px rgba(0,0,0,0.4)",
-        }}
-      >
-        {code}
-      </span>
+      <BibSvg code={code} team={team} />
     </motion.div>
   );
 };
 
-// ── Ball token ───────────────────────────────────────────────────────────────
+// ── Ball token (Netball SVG) ─────────────────────────────────────────────────
 const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> = ({
   courtW, courtH, resetKey,
 }) => {
@@ -156,19 +146,17 @@ const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> 
         x,
         y,
         position: "absolute",
-        top: -R_BALL,
-        left: -R_BALL,
-        width: R_BALL * 2,
-        height: R_BALL * 2,
+        top: -(BALL_SIZE / 2),
+        left: -(BALL_SIZE / 2),
+        width: BALL_SIZE,
+        height: BALL_SIZE,
         touchAction: "none",
-        background:
-          "radial-gradient(circle at 38% 35%, #fff 0%, #f4c842 45%, #d4940a 100%)",
-        boxShadow:
-          "0 3px 12px rgba(0,0,0,0.7), 0 0 0 1.5px rgba(255,255,255,0.55)",
         zIndex: 20,
-        borderRadius: "50%",
         cursor: "grab",
+        filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.7))",
       }}
+      className="[&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+      dangerouslySetInnerHTML={{ __html: BALL_SVG }}
     />
   );
 };
@@ -195,10 +183,7 @@ export const InteractiveCourt: React.FC = () => {
       {/* ── Direction legend ── */}
       <div className="flex items-center justify-between px-5 pt-3 pb-2">
         <div className="flex items-center gap-1.5">
-          <span
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-            style={{ background: "#E53935" }}
-          />
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: "#E53935" }} />
           <span className="text-[11px] font-bold text-white/60">
             Fire <span className="text-white/90">↑</span>
           </span>
@@ -215,10 +200,7 @@ export const InteractiveCourt: React.FC = () => {
           <span className="text-[11px] font-bold text-white/60">
             <span className="text-white/90">↓</span> Ice
           </span>
-          <span
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-            style={{ background: "#1E88E5" }}
-          />
+          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: "#1E88E5" }} />
         </div>
       </div>
 
@@ -232,8 +214,7 @@ export const InteractiveCourt: React.FC = () => {
             maxWidth: 300,
             maxHeight: "calc(100dvh - 220px)",
             background: "#0b0b10",
-            boxShadow:
-              "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
+            boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
           }}
         >
           {/* Fire goal zone tint (top third) */}
@@ -241,8 +222,7 @@ export const InteractiveCourt: React.FC = () => {
             className="absolute left-0 right-0 top-0 pointer-events-none"
             style={{
               height: "33.5%",
-              background:
-                "linear-gradient(to bottom, rgba(229,57,53,0.10) 0%, transparent 100%)",
+              background: "linear-gradient(to bottom, rgba(229,57,53,0.10) 0%, transparent 100%)",
             }}
           />
           {/* Ice goal zone tint (bottom third) */}
@@ -250,8 +230,7 @@ export const InteractiveCourt: React.FC = () => {
             className="absolute left-0 right-0 bottom-0 pointer-events-none"
             style={{
               height: "33.5%",
-              background:
-                "linear-gradient(to top, rgba(30,136,229,0.10) 0%, transparent 100%)",
+              background: "linear-gradient(to top, rgba(30,136,229,0.10) 0%, transparent 100%)",
             }}
           />
 
@@ -267,6 +246,7 @@ export const InteractiveCourt: React.FC = () => {
             <PlayerToken
               key={`fire-${pos.code}`}
               code={pos.code}
+              team="Fire"
               hex={pos.fireHex}
               initNorm={FIRE_INIT[pos.code]}
               zone={FIRE_ZONES[pos.code]}
@@ -281,6 +261,7 @@ export const InteractiveCourt: React.FC = () => {
             <PlayerToken
               key={`ice-${pos.code}`}
               code={pos.code}
+              team="Ice"
               hex={pos.iceHex}
               initNorm={ICE_INIT[pos.code]}
               zone={ICE_ZONES[pos.code]}
@@ -291,11 +272,7 @@ export const InteractiveCourt: React.FC = () => {
           ))}
 
           {/* Ball */}
-          <BallToken
-            courtW={courtSize.w}
-            courtH={courtSize.h}
-            resetKey={resetKey}
-          />
+          <BallToken courtW={courtSize.w} courtH={courtSize.h} resetKey={resetKey} />
 
           {/* Edge vignette */}
           <div
