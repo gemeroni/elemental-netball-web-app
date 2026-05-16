@@ -15,6 +15,9 @@ const COURT_SVG = courtLinesRaw
 const OUTLINE_SVG = netballOutlineRaw
   .replace(/<\?xml[^?]*\?>/g, "")
   .replace(/<!DOCTYPE[^>]*>/gi, "")
+  // Strip <style> block — its class rules bleed globally when the SVG is inlined.
+  // All visual properties are already present as inline attributes on each element.
+  .replace(/<style[\s\S]*?<\/style>/gi, "")
   .trim();
 
 // ── Token dimensions (px) ────────────────────────────────────────────────────
