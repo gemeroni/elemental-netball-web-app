@@ -69,7 +69,7 @@ export const TheCourtSection: React.FC<TheCourtSectionProps> = ({ onBack }) => {
 
         <div className="relative w-full max-w-sm aspect-[1/2] mb-8 bg-card rounded-lg overflow-hidden border border-border p-4 shadow-xl">
           <AssetImage 
-            src="/assets/svg/Spectrum_Court.svg" 
+            src="/api/storage/public-objects/Spectrum_Court.svg" 
             alt="Netball Court" 
             className="w-full h-full object-contain pointer-events-none"
             fallbackText="Court Diagram"
