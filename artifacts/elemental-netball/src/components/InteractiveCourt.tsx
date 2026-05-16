@@ -3,21 +3,19 @@ import { motion, AnimatePresence, useMotionValue, animate } from "framer-motion"
 import { POSITIONS } from "@/data/positions";
 import type { Team } from "@/data/positions";
 import { BibSvg } from "./BibSvg";
-import netballOutlineRaw from "@/assets/svg/Netball_Outline.svg?raw";
+import netballFillRaw from "@/assets/svg/Netball_Fill_Only.svg?raw";
 
 // ── SVG helpers ───────────────────────────────────────────────────────────────
 function stripSvgMeta(raw: string) {
   return raw.replace(/<\?xml[^?]*\?>/g, "").replace(/<!DOCTYPE[^>]*>/gi, "").trim();
 }
 
-function inlineSvg(raw: string) {
-  return stripSvgMeta(raw)
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<svg /, '<svg fill="white" ')
-    .replace(/\s+class="[^"]*"/g, "");
-}
+const FILL_SVG_BASE = stripSvgMeta(netballFillRaw);
 
-const OUTLINE_SVG = stripSvgMeta(netballOutlineRaw).replace(/<style[\s\S]*?<\/style>/gi, "");
+// Tint the ball SVG by replacing the grey fill with the given colour.
+function tintBallSvg(color: string): string {
+  return FILL_SVG_BASE.replace(/#e6e7e8/gi, color);
+}
 
 // ── Token dimensions ──────────────────────────────────────────────────────────
 const BIB_W    = 32;
@@ -200,8 +198,8 @@ const BallToken: React.FC<{
   const [color, setColor] = useState(() => heatColor(0.5));
 
   useEffect(() => {
-    x.set(0.5 * courtW);
-    y.set(0.5 * courtH);
+    animate(x, 0.5 * courtW, { type: "spring", stiffness: 400, damping: 30 });
+    animate(y, 0.5 * courtH, { type: "spring", stiffness: 400, damping: 30 });
     setColor(heatColor(0.5));
   }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -214,12 +212,14 @@ const BallToken: React.FC<{
 
   if (courtW === 0) return null;
 
+  const tintedSvg = tintBallSvg(color);
+
   return (
     <motion.div
       data-bib="true"
       drag
       dragMomentum={false}
-      whileDrag={{ scale: 1.25, zIndex: 60 }}
+      whileDrag={{ scale: 1.3, zIndex: 60 }}
       style={{
         x,
         y,
@@ -231,22 +231,25 @@ const BallToken: React.FC<{
         touchAction: "none",
         zIndex: 20,
         cursor: "grab",
-        filter: `drop-shadow(0 2px 8px ${color}cc)`,
+        filter: `drop-shadow(0 0 6px ${color}bb) drop-shadow(0 2px 4px rgba(0,0,0,0.6))`,
       }}
     >
+      {/* Tinted netball fill — seam panels in the heat colour */}
+      <div
+        style={{ position: "absolute", inset: 0 }}
+        className="[&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+        dangerouslySetInnerHTML={{ __html: tintedSvg }}
+      />
+      {/* Specular highlight — soft white shimmer top-left for 3-D pop */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           borderRadius: "50%",
-          background: color,
-          transition: "background 80ms linear",
+          background:
+            "radial-gradient(circle at 35% 28%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 35%, transparent 60%)",
+          pointerEvents: "none",
         }}
-      />
-      <div
-        style={{ position: "absolute", inset: 0 }}
-        className="[&>svg]:w-full [&>svg]:h-full [&>svg]:block [&>svg]:overflow-visible"
-        dangerouslySetInnerHTML={{ __html: OUTLINE_SVG }}
       />
     </motion.div>
   );
@@ -261,6 +264,7 @@ export const InteractiveCourt: React.FC = () => {
   const [courtSize, setCourtSize] = useState({ w: 0, h: 0 });
   const [resetKey, setResetKey] = useState(0);
   const [selected, setSelected] = useState<Selected | null>(null);
+  const [showBall, setShowBall] = useState(true);
 
   useEffect(() => {
     const el = courtRef.current;
@@ -307,12 +311,33 @@ export const InteractiveCourt: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={handleReset}
-          className="text-[11px] font-black uppercase tracking-wider bg-white/10 hover:bg-white/20 active:bg-white/30 px-4 py-1.5 rounded-full transition-colors"
-        >
-          Reset
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Ball visibility toggle */}
+          <button
+            onClick={() => setShowBall(b => !b)}
+            className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full transition-all duration-200"
+            style={{
+              background: showBall ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+              color: showBall ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)",
+              border: showBall ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(255,255,255,0.07)",
+            }}
+            title={showBall ? "Hide ball" : "Show ball"}
+          >
+            <svg width="14" height="14" viewBox="0 0 561.84 561.84" style={{ opacity: showBall ? 1 : 0.4 }}>
+              <circle cx="280.92" cy="280.92" r="265" fill="currentColor" opacity="0.6" />
+              <ellipse cx="280.92" cy="280.92" rx="265" ry="80" fill="none" stroke="currentColor" strokeWidth="22" opacity="0.7" />
+              <line x1="15.92" y1="280.92" x2="545.92" y2="280.92" stroke="currentColor" strokeWidth="22" opacity="0.7" />
+            </svg>
+            Ball
+          </button>
+
+          <button
+            onClick={handleReset}
+            className="text-[11px] font-black uppercase tracking-wider bg-white/10 hover:bg-white/20 active:bg-white/30 px-4 py-1.5 rounded-full transition-colors"
+          >
+            Reset
+          </button>
+        </div>
 
         <div className="flex items-center gap-1">
           <div className="text-right">
@@ -440,11 +465,24 @@ export const InteractiveCourt: React.FC = () => {
             ))}
 
             {/* Ball */}
-            <BallToken
-              courtW={courtSize.w}
-              courtH={courtSize.h}
-              resetKey={resetKey}
-            />
+            <AnimatePresence>
+              {showBall && (
+                <motion.div
+                  key="ball-wrapper"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.3 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  style={{ position: "absolute", inset: 0 }}
+                >
+                  <BallToken
+                    courtW={courtSize.w}
+                    courtH={courtSize.h}
+                    resetKey={resetKey}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
       </div>
     </div>
