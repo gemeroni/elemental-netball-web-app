@@ -86,7 +86,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({ onBack }) =>
                 </div>
 
                 <p className="text-card-foreground text-sm mb-4 leading-relaxed font-medium">
-                  {activePositionInfo.role}
+                  {activePositionInfo.matchupDescription}
                 </p>
 
                 <div className="mb-4">
@@ -97,13 +97,19 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({ onBack }) =>
                 </div>
 
                 <div>
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground font-bold block mb-2">Matchup</span>
                   <div className="flex items-center gap-4 bg-background/50 rounded-lg p-3 border border-border/50">
-                    <div className="w-10 h-12">
+                    <div className="w-10 h-12 flex-shrink-0">
                       <BibSvg code={activePositionInfo.code} team="Fire" />
                     </div>
-                    <span className="font-bold text-muted-foreground italic text-sm">vs</span>
-                    <div className="w-10 h-12">
+                    <div className="flex-1 text-center">
+                      <span className="font-bold text-muted-foreground italic text-sm block">vs</span>
+                      <span className="text-xs uppercase tracking-widest font-black" style={{ color: activePositionInfo.fireHex }}>
+                        {activePositionInfo.code === activePositionInfo.matchup
+                          ? "Each team has one"
+                          : `Plays ${activePositionInfo.matchup}`}
+                      </span>
+                    </div>
+                    <div className="w-10 h-12 flex-shrink-0">
                       <BibSvg code={activePositionInfo.matchup} team="Ice" />
                     </div>
                   </div>

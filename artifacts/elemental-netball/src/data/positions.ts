@@ -11,6 +11,7 @@ export interface Position {
   role: string;
   zones: string;
   matchup: string;
+  matchupDescription: string;
 }
 
 export const POSITIONS: Position[] = [
@@ -24,7 +25,9 @@ export const POSITIONS: Position[] = [
     iceColorName: "Purple",
     role: "Scores goals from inside the shooting circle.",
     zones: "Goal Third (attacking) + Shooting Circle (attacking)",
-    matchup: "GK"
+    matchup: "GK",
+    matchupDescription:
+      "The Goal Shooter waits in the shooting circle, ready to score the moment they get the ball. The Goal Keeper stays right with them, jumping to block every shot.",
   },
   {
     id: "ga",
@@ -36,7 +39,9 @@ export const POSITIONS: Position[] = [
     iceColorName: "Blue",
     role: "Feeds the shooter and helps score goals.",
     zones: "Goal Third (attacking) + Centre Third + Shooting Circle (attacking)",
-    matchup: "GD"
+    matchup: "GD",
+    matchupDescription:
+      "The Goal Attack helps move the ball into the shooting circle and shoots for goal too. The Goal Defence stays right behind them, putting their hands up to block shots.",
   },
   {
     id: "wa",
@@ -48,7 +53,9 @@ export const POSITIONS: Position[] = [
     iceColorName: "Teal",
     role: "Sets up shots by feeding the ball into the circle.",
     zones: "Centre Third + Goal Third (attacking, no circle)",
-    matchup: "WD"
+    matchup: "WD",
+    matchupDescription:
+      "The Wing Attack zips around the court to pass the ball into the shooting circle for the shooters. The Wing Defence chases them, jumping in front of every pass.",
   },
   {
     id: "c",
@@ -60,7 +67,9 @@ export const POSITIONS: Position[] = [
     iceColorName: "Green",
     role: "Links attack and defence across the whole court.",
     zones: "All thirds, no shooting circles",
-    matchup: "C"
+    matchup: "C",
+    matchupDescription:
+      "Both teams' Centres are the busiest players on the court. They run from one end to the other, passing, defending, and helping wherever the ball goes.",
   },
   {
     id: "wd",
@@ -72,7 +81,9 @@ export const POSITIONS: Position[] = [
     iceColorName: "Yellow",
     role: "Stops the Wing Attack from feeding the ball in.",
     zones: "Centre Third + Goal Third (defending, no circle)",
-    matchup: "WA"
+    matchup: "WA",
+    matchupDescription:
+      "The Wing Defence guards the middle of the court to stop the other Wing Attack from getting passes through. The Wing Attack dodges and weaves to get free.",
   },
   {
     id: "gd",
@@ -84,7 +95,9 @@ export const POSITIONS: Position[] = [
     iceColorName: "Orange",
     role: "Marks the Goal Attack and blocks shots.",
     zones: "Goal Third (defending) + Centre Third + Shooting Circle (defending)",
-    matchup: "GA"
+    matchup: "GA",
+    matchupDescription:
+      "The Goal Defence sticks close to the Goal Attack, putting their hands up to block shots and grab loose balls. The Goal Attack twists and turns to get free.",
   },
   {
     id: "gk",
@@ -96,11 +109,15 @@ export const POSITIONS: Position[] = [
     iceColorName: "Red",
     role: "Defends the goal post and intercepts shots.",
     zones: "Goal Third (defending) + Shooting Circle (defending)",
-    matchup: "GS"
-  }
+    matchup: "GS",
+    matchupDescription:
+      "The Goal Keeper stands tall under the goal post, jumping high to swat away shots. The Goal Shooter watches for an open moment to score.",
+  },
 ];
 
-export const getPositionByCode = (code: string) => POSITIONS.find(p => p.code === code);
+export const getPositionByCode = (code: string) =>
+  POSITIONS.find((p) => p.code === code);
+
 export const getBibFilename = (code: string, team: Team) => {
   const pos = getPositionByCode(code);
   if (!pos) return "";
