@@ -212,21 +212,13 @@ export const ElementalNetball: React.FC = () => {
             </div>
 
             {/* ── Court Zone Diagram ── */}
-            <div className="relative mx-auto w-full max-w-[300px] aspect-[1/1.8]">
-              <CourtZone
-                posCode={activePos}
-                posName={pos.name}
-                zoneCaption={pos.zoneCaption}
-                accentHex={activeHex}
-                team={activeTeam}
-              />
-              <img
-                src="/assets/svg/White_Court.svg"
-                aria-hidden
-                className="absolute inset-0 w-full h-full pointer-events-none select-none"
-                style={{ objectFit: "fill", opacity: 0.92 }}
-              />
-            </div>
+            <CourtZone
+              posCode={activePos}
+              posName={pos.name}
+              zoneCaption={pos.zoneCaption}
+              accentHex={activeHex}
+              team={activeTeam}
+            />
 
             {/* ── Position Details ── */}
             <AnimatePresence mode="wait">
