@@ -32,12 +32,14 @@ export const ElementalNetball: React.FC = () => {
     >
       {/* ── Header ───────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-[#111] border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3 gap-3 text-center text-[14px]">
+        <div className="flex items-center justify-between px-4 py-3 gap-3">
           <div className="min-w-0">
             <h1 className="text-lg font-black uppercase tracking-tight text-white leading-none">
               Elemental <span className="text-primary">Netball</span>
             </h1>
-            <p className="text-muted-foreground uppercase tracking-widest font-bold mt-0.5 text-[10px] text-left">🔥Interactive Game Basics 🧊</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">
+              Interactive Game Basics
+            </p>
           </div>
 
           {/* Fire / Ice toggle — only used by Positions tab */}
@@ -100,6 +102,7 @@ export const ElementalNetball: React.FC = () => {
           ))}
         </div>
       </header>
+
       {/* ── Content ──────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         {tab === "positions" ? (
