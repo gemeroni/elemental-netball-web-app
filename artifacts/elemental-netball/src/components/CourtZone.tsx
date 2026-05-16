@@ -75,7 +75,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
       >
         {/* ── Label row ─────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-4 pt-3 pb-0">
-          <span className="text-[10px] uppercase tracking-widest font-black text-white/30">
+          <span className="text-[13px] uppercase tracking-widest font-black text-white/40">
             Zone
           </span>
           <AnimatePresence mode="wait">
@@ -85,7 +85,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
               transition={{ duration: 0.18 }}
-              className="text-[10px] uppercase tracking-widest font-black"
+              className="text-[13px] uppercase tracking-wider font-black"
               style={{ color: hex }}
             >
               {posCode} · {posName}
@@ -137,17 +137,18 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.22 }}
-              className="flex flex-col items-center gap-1 flex-shrink-0"
+              className="flex flex-col items-center flex-shrink-0"
             >
-              <span className="text-[8px] font-black text-white/35 uppercase tracking-widest leading-none">
-                Heat
-              </span>
               <div
                 className="[&>svg]:block"
                 style={{
                   width: 28,
                   height: 87,
-                  filter: `drop-shadow(0 0 6px ${glow})`,
+                  filter: [
+                    `drop-shadow(0 0 8px ${hex})`,
+                    `drop-shadow(0 0 16px ${hex}bb)`,
+                    `drop-shadow(0 0 3px ${hex})`,
+                  ].join(" "),
                 }}
                 dangerouslySetInnerHTML={{ __html: thermSvg }}
               />
@@ -156,7 +157,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
         </div>
 
         {/* ── Caption ───────────────────────────────────────────── */}
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-5">
           <AnimatePresence mode="wait">
             <motion.p
               key={`cap-${posCode}`}
@@ -164,8 +165,8 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2, delay: 0.05 }}
-              className="text-[11px] text-center leading-relaxed"
-              style={{ color: `${hex}bb` }}
+              className="text-[13px] text-center leading-relaxed font-medium"
+              style={{ color: `${hex}cc` }}
             >
               {zoneCaption}
             </motion.p>

@@ -414,34 +414,53 @@ export const InteractiveCourt: React.FC = () => {
         </div>{/* /court */}
 
         {/* ── Elemental Thermometer Range ── */}
-        <div className="relative self-stretch flex-shrink-0" style={{ width: 30 }}>
-          {/* Gradient thermometer SVG — fills full height of the column */}
-          <div
-            className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-            dangerouslySetInnerHTML={{ __html: THERM_RANGE_SVG }}
-          />
+        <div className="self-stretch flex-shrink-0 flex items-stretch" style={{ width: 52 }}>
 
-          {/* Labels */}
-          <div className="absolute inset-x-0 top-0 flex justify-center pointer-events-none"
-            style={{ top: `${THERM_TOP_PCT - 8}%` }}>
-            <span className="text-[7px] font-black text-white/40 leading-none">🔥</span>
-          </div>
-          <div className="absolute inset-x-0 flex justify-center pointer-events-none"
-            style={{ top: `${THERM_TOP_PCT + THERM_RANGE_PCT + 2}%` }}>
-            <span className="text-[7px] font-black text-white/40 leading-none">❄</span>
+          {/* Thermometer SVG column */}
+          <div className="relative flex-shrink-0" style={{ width: 30 }}>
+            {/* Gradient thermometer SVG — fills full height */}
+            <div
+              className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+              dangerouslySetInnerHTML={{ __html: THERM_RANGE_SVG }}
+            />
+
+            {/* Fire / Ice emoji markers */}
+            <div
+              className="absolute inset-x-0 flex justify-center pointer-events-none"
+              style={{ top: `${THERM_TOP_PCT - 8}%` }}
+            >
+              <span className="text-[8px] leading-none">🔥</span>
+            </div>
+            <div
+              className="absolute inset-x-0 flex justify-center pointer-events-none"
+              style={{ top: `${THERM_TOP_PCT + THERM_RANGE_PCT + 2}%` }}
+            >
+              <span className="text-[8px] leading-none">❄</span>
+            </div>
+
+            {/* Live ball-position indicator */}
+            <div
+              className="absolute left-1/2 w-3.5 h-3.5 rounded-full border border-white/60 pointer-events-none"
+              style={{
+                top: `${THERM_TOP_PCT + ballNormY * THERM_RANGE_PCT}%`,
+                transform: "translate(-50%, -50%)",
+                background: heatColor(ballNormY),
+                boxShadow: `0 0 12px 5px ${heatColor(ballNormY)}aa, 0 0 0 1px ${heatColor(ballNormY)}`,
+                transition: "top 80ms linear, background 80ms linear, box-shadow 80ms linear",
+              }}
+            />
           </div>
 
-          {/* Live ball-position indicator */}
-          <div
-            className="absolute left-1/2 w-3 h-3 rounded-full border border-white/50 pointer-events-none"
-            style={{
-              top: `${THERM_TOP_PCT + ballNormY * THERM_RANGE_PCT}%`,
-              transform: "translate(-50%, -50%)",
-              background: heatColor(ballNormY),
-              boxShadow: `0 0 10px 4px ${heatColor(ballNormY)}99, 0 0 0 1px ${heatColor(ballNormY)}`,
-              transition: "top 80ms linear, background 80ms linear, box-shadow 80ms linear",
-            }}
-          />
+          {/* GAME TEMP vertical label */}
+          <div className="flex items-center justify-center" style={{ width: 22 }}>
+            <span
+              className="text-[9px] font-black uppercase text-white/35 leading-none tracking-[0.18em] whitespace-nowrap select-none"
+              style={{ writingMode: "vertical-rl" }}
+            >
+              Game Temp
+            </span>
+          </div>
+
         </div>
 
         </div>{/* /flex row */}
