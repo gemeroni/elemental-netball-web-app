@@ -1,0 +1,317 @@
+import React, { useRef, useEffect, useState, useCallback } from "react";
+import { motion, useMotionValue } from "framer-motion";
+import { courtLinesRaw } from "@/assets/zoneSvgs";
+import { POSITIONS } from "@/data/positions";
+
+const COURT_SVG = courtLinesRaw
+  .replace(/<\?xml[^?]*\?>/g, "")
+  .replace(/<!DOCTYPE[^>]*>/gi, "")
+  .trim();
+
+const R_PLAYER = 18;
+const R_BALL = 13;
+
+// ── Zone rects in normalised [0,1] court space (y=0 = top) ─────────────────
+// Fire attacks toward the TOP of the court (y → 0).
+type ZoneRect = { x: [number, number]; y: [number, number] };
+
+const FIRE_ZONES: Record<string, ZoneRect> = {
+  GS: { x: [0, 1], y: [0.000, 0.335] },
+  GA: { x: [0, 1], y: [0.000, 0.668] },
+  WA: { x: [0, 1], y: [0.000, 0.668] },
+  C:  { x: [0, 1], y: [0.000, 1.000] },
+  WD: { x: [0, 1], y: [0.332, 1.000] },
+  GD: { x: [0, 1], y: [0.332, 1.000] },
+  GK: { x: [0, 1], y: [0.665, 1.000] },
+};
+
+// Ice attacks toward the BOTTOM — mirror Fire zones vertically.
+const ICE_ZONES: Record<string, ZoneRect> = Object.fromEntries(
+  Object.entries(FIRE_ZONES).map(([code, z]) => [
+    code,
+    { x: z.x, y: [1 - z.y[1], 1 - z.y[0]] as [number, number] },
+  ])
+);
+
+// ── Starting positions [normX, normY] ───────────────────────────────────────
+const FIRE_INIT: Record<string, [number, number]> = {
+  GS: [0.30, 0.12],
+  GA: [0.54, 0.22],
+  WA: [0.20, 0.46],
+  C:  [0.38, 0.50],
+  WD: [0.22, 0.62],
+  GD: [0.48, 0.75],
+  GK: [0.28, 0.86],
+};
+
+const ICE_INIT: Record<string, [number, number]> = {
+  GS: [0.72, 0.88],
+  GA: [0.46, 0.78],
+  WA: [0.80, 0.54],
+  C:  [0.62, 0.50],
+  WD: [0.78, 0.38],
+  GD: [0.52, 0.25],
+  GK: [0.72, 0.14],
+};
+
+// ── Player token ─────────────────────────────────────────────────────────────
+interface TokenProps {
+  code: string;
+  hex: string;
+  textHex?: string;
+  initNorm: [number, number];
+  zone: ZoneRect;
+  courtW: number;
+  courtH: number;
+  resetKey: number;
+}
+
+const PlayerToken: React.FC<TokenProps> = ({
+  code, hex, initNorm, zone, courtW, courtH, resetKey,
+}) => {
+  const x = useMotionValue(initNorm[0] * courtW);
+  const y = useMotionValue(initNorm[1] * courtH);
+
+  useEffect(() => {
+    x.set(initNorm[0] * courtW);
+    y.set(initNorm[1] * courtH);
+  }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const clamp = useCallback(() => {
+    const r = R_PLAYER;
+    const minX = zone.x[0] * courtW + r;
+    const maxX = zone.x[1] * courtW - r;
+    const minY = zone.y[0] * courtH + r;
+    const maxY = zone.y[1] * courtH - r;
+    x.set(Math.max(minX, Math.min(maxX, x.get())));
+    y.set(Math.max(minY, Math.min(maxY, y.get())));
+  }, [zone, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (courtW === 0) return null;
+
+  return (
+    <motion.div
+      drag
+      dragMomentum={false}
+      onDrag={clamp}
+      whileDrag={{ scale: 1.22 }}
+      style={{
+        x,
+        y,
+        position: "absolute",
+        top: -R_PLAYER,
+        left: -R_PLAYER,
+        width: R_PLAYER * 2,
+        height: R_PLAYER * 2,
+        touchAction: "none",
+        background: `radial-gradient(circle at 38% 35%, ${hex}dd 0%, ${hex} 100%)`,
+        boxShadow: `0 2px 10px ${hex}99, 0 0 0 1.5px rgba(255,255,255,0.2)`,
+        zIndex: 10,
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "grab",
+        userSelect: "none",
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "inherit",
+          fontWeight: 900,
+          fontSize: 9,
+          color: "#fff",
+          lineHeight: 1,
+          letterSpacing: 0,
+          pointerEvents: "none",
+          textShadow: "0 1px 2px rgba(0,0,0,0.4)",
+        }}
+      >
+        {code}
+      </span>
+    </motion.div>
+  );
+};
+
+// ── Ball token ───────────────────────────────────────────────────────────────
+const BallToken: React.FC<{ courtW: number; courtH: number; resetKey: number }> = ({
+  courtW, courtH, resetKey,
+}) => {
+  const x = useMotionValue(0.5 * courtW);
+  const y = useMotionValue(0.5 * courtH);
+
+  useEffect(() => {
+    x.set(0.5 * courtW);
+    y.set(0.5 * courtH);
+  }, [resetKey, courtW, courtH]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (courtW === 0) return null;
+
+  return (
+    <motion.div
+      drag
+      dragMomentum={false}
+      whileDrag={{ scale: 1.25, zIndex: 60 }}
+      style={{
+        x,
+        y,
+        position: "absolute",
+        top: -R_BALL,
+        left: -R_BALL,
+        width: R_BALL * 2,
+        height: R_BALL * 2,
+        touchAction: "none",
+        background:
+          "radial-gradient(circle at 38% 35%, #fff 0%, #f4c842 45%, #d4940a 100%)",
+        boxShadow:
+          "0 3px 12px rgba(0,0,0,0.7), 0 0 0 1.5px rgba(255,255,255,0.55)",
+        zIndex: 20,
+        borderRadius: "50%",
+        cursor: "grab",
+      }}
+    />
+  );
+};
+
+// ── Main component ────────────────────────────────────────────────────────────
+export const InteractiveCourt: React.FC = () => {
+  const courtRef = useRef<HTMLDivElement>(null);
+  const [courtSize, setCourtSize] = useState({ w: 0, h: 0 });
+  const [resetKey, setResetKey] = useState(0);
+
+  useEffect(() => {
+    const el = courtRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setCourtSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div className="flex flex-col h-full select-none">
+      {/* ── Direction legend ── */}
+      <div className="flex items-center justify-between px-5 pt-3 pb-2">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{ background: "#E53935" }}
+          />
+          <span className="text-[11px] font-bold text-white/60">
+            Fire <span className="text-white/90">↑</span>
+          </span>
+        </div>
+
+        <button
+          onClick={() => setResetKey((k) => k + 1)}
+          className="text-[11px] font-black uppercase tracking-wider bg-white/10 hover:bg-white/20 active:bg-white/30 px-4 py-1.5 rounded-full transition-colors"
+        >
+          Reset
+        </button>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-bold text-white/60">
+            <span className="text-white/90">↓</span> Ice
+          </span>
+          <span
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{ background: "#1E88E5" }}
+          />
+        </div>
+      </div>
+
+      {/* ── Court ── */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div
+          ref={courtRef}
+          className="relative overflow-hidden rounded-2xl w-full"
+          style={{
+            aspectRatio: "356 / 709",
+            maxWidth: 300,
+            maxHeight: "calc(100dvh - 220px)",
+            background: "#0b0b10",
+            boxShadow:
+              "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
+          }}
+        >
+          {/* Fire goal zone tint (top third) */}
+          <div
+            className="absolute left-0 right-0 top-0 pointer-events-none"
+            style={{
+              height: "33.5%",
+              background:
+                "linear-gradient(to bottom, rgba(229,57,53,0.10) 0%, transparent 100%)",
+            }}
+          />
+          {/* Ice goal zone tint (bottom third) */}
+          <div
+            className="absolute left-0 right-0 bottom-0 pointer-events-none"
+            style={{
+              height: "33.5%",
+              background:
+                "linear-gradient(to top, rgba(30,136,229,0.10) 0%, transparent 100%)",
+            }}
+          />
+
+          {/* White court lines */}
+          <div
+            className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+            style={{ opacity: 0.55 }}
+            dangerouslySetInnerHTML={{ __html: COURT_SVG }}
+          />
+
+          {/* Fire players */}
+          {POSITIONS.map((pos) => (
+            <PlayerToken
+              key={`fire-${pos.code}`}
+              code={pos.code}
+              hex={pos.fireHex}
+              initNorm={FIRE_INIT[pos.code]}
+              zone={FIRE_ZONES[pos.code]}
+              courtW={courtSize.w}
+              courtH={courtSize.h}
+              resetKey={resetKey}
+            />
+          ))}
+
+          {/* Ice players */}
+          {POSITIONS.map((pos) => (
+            <PlayerToken
+              key={`ice-${pos.code}`}
+              code={pos.code}
+              hex={pos.iceHex}
+              initNorm={ICE_INIT[pos.code]}
+              zone={ICE_ZONES[pos.code]}
+              courtW={courtSize.w}
+              courtH={courtSize.h}
+              resetKey={resetKey}
+            />
+          ))}
+
+          {/* Ball */}
+          <BallToken
+            courtW={courtSize.w}
+            courtH={courtSize.h}
+            resetKey={resetKey}
+          />
+
+          {/* Edge vignette */}
+          <div
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ── Hint ── */}
+      <p className="text-center text-[11px] font-semibold text-white/30 pb-4 pt-2 px-4">
+        Drag players · they stay in their zone · drag the ball anywhere
+      </p>
+    </div>
+  );
+};
