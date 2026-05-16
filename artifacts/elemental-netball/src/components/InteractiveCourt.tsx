@@ -208,7 +208,7 @@ export const InteractiveCourt: React.FC = () => {
       <div className="flex-1 flex items-center justify-center px-4">
         <div
           ref={courtRef}
-          className="relative overflow-hidden rounded-2xl w-full"
+          className="relative overflow-hidden w-full"
           style={{
             aspectRatio: "356 / 709",
             maxWidth: 300,
@@ -276,7 +276,7 @@ export const InteractiveCourt: React.FC = () => {
 
           {/* Edge vignette */}
           <div
-            className="absolute inset-0 pointer-events-none rounded-2xl"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background:
                 "radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
