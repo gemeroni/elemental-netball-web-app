@@ -213,6 +213,7 @@ export const ElementalNetball: React.FC = () => {
               posName={pos.name}
               zoneCaption={pos.zoneCaption}
               accentHex={activeHex}
+              team={activeTeam}
             />
 
             {/* ── Position Details ── */}

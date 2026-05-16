@@ -44,6 +44,7 @@ interface CourtZoneProps {
   posName: string;
   zoneCaption: string;
   accentHex: string;
+  team: "Fire" | "Ice";
 }
 
 export const CourtZone: React.FC<CourtZoneProps> = ({
@@ -51,6 +52,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
   posName,
   zoneCaption,
   accentHex,
+  team,
 }) => {
   const zoneSvg = ZONE_SVGS[posCode] ?? "";
 
@@ -106,9 +108,11 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
             }}
           >
             {/* ── Layer 1: Zone colour fill + bloom glow ──────────── */}
+            {/* Ice zones are the vertical mirror of Fire zones — scaleY(-1) flips  */}
+            {/* the fill to the correct end without needing separate Ice SVG assets. */}
             <AnimatePresence mode="wait">
               <motion.div
-                key={`zone-${posCode}`}
+                key={`zone-${posCode}-${team}`}
                 className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -116,6 +120,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
                 transition={{ duration: 0.22 }}
                 style={{
                   filter: `drop-shadow(0 0 14px ${glow}) drop-shadow(0 0 30px ${hex}35)`,
+                  transform: team === "Ice" ? "scaleY(-1)" : undefined,
                 }}
                 dangerouslySetInnerHTML={{ __html: zoneSvg }}
               />
