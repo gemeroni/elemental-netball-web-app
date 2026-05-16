@@ -10,14 +10,15 @@ import tealThermRaw   from "@/assets/svg/Teal_Thermometer.svg?raw";
 import blueThermRaw   from "@/assets/svg/Blue_Thermometer.svg?raw";
 import purpleThermRaw from "@/assets/svg/Purple_Thermometer.svg?raw";
 
-// Inline-safe SVG: strip style block, make outline paths white on dark bg.
+// Inline-safe SVG: strip style block, preserve the coloured mercury fill.
 function processThermSvg(raw: string) {
   return raw
     .replace(/<\?xml[^?]*\?>/g, "")
     .replace(/<!DOCTYPE[^>]*>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<svg /, '<svg fill="white" ')
+    .replace(/<svg /, '<svg fill="none" ')
     .replace(/\s+class="[^"]*"/g, "")
+    .replace(/\bfill="#(?:fff|ffffff|fffFFF|FFF)"\b/gi, 'fill="none"')
     .trim();
 }
 
@@ -58,6 +59,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
 
   // Hex → rgba helper for inline styles
   const hex = accentHex;
+  const glowFaint = `${hex}14`;
   // Pick the thermometer matching this position's elemental temperature
   const thermSvg = HEX_TO_THERM[hex.toLowerCase()] ?? HEX_TO_THERM["#009933"];
   const thermGlow = {
@@ -144,7 +146,6 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
                 style={{
                   width: 28,
                   height: 87,
-                  filter: `drop-shadow(${thermGlow})`,
                 }}
                 dangerouslySetInnerHTML={{ __html: thermSvg }}
               />
