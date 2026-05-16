@@ -274,14 +274,6 @@ export const InteractiveCourt: React.FC = () => {
           {/* Ball */}
           <BallToken courtW={courtSize.w} courtH={courtSize.h} resetKey={resetKey} />
 
-          {/* Edge vignette */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
-            }}
-          />
         </div>
       </div>
 

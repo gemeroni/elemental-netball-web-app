@@ -63,7 +63,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
         <div className="flex justify-center px-10 py-4">
           {/* Fixed aspect-ratio court frame */}
           <div
-            className="relative w-full rounded-xl overflow-hidden"
+            className="relative w-full overflow-hidden"
             style={{
               aspectRatio: "356 / 709",
               maxWidth: 180,
@@ -94,14 +94,6 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
               dangerouslySetInnerHTML={{ __html: COURT_LINES }}
             />
 
-            {/* ── Layer 3: Subtle vignette ─────────────────────────── */}
-            <div
-              className="absolute inset-0 pointer-events-none rounded-xl"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%)",
-              }}
-            />
           </div>
         </div>
 
