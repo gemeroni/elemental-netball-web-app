@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @workspace/elemental-netball build",
+  "outputDirectory": "artifacts/elemental-netball/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null
+}
