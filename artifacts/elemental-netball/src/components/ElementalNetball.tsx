@@ -28,7 +28,7 @@ export const ElementalNetball: React.FC = () => {
 
   return (
     <div
-      className="min-h-[100dvh] w-full bg-background text-foreground font-sans flex flex-col"
+      className="min-h-[100dvh] w-full sm:w-1/2 sm:mx-auto bg-background text-foreground font-sans flex flex-col"
       data-testid="app-container"
     >
       {/* ── Header ───────────────────────────────────────── */}
@@ -49,11 +49,11 @@ export const ElementalNetball: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.15 }}
-                className="flex rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
+                className="flex w-36 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
               >
                 <button
-                  onClick={() => setActiveTeam("Fire")}
-                  className={`px-4 py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
+                  onClick={() => { setActiveTeam("Fire"); if (!isFire) setActivePos(pos.matchup); }}
+                  className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
                     isFire
                       ? "bg-primary text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
@@ -63,8 +63,8 @@ export const ElementalNetball: React.FC = () => {
                   🔥 Fire
                 </button>
                 <button
-                  onClick={() => setActiveTeam("Ice")}
-                  className={`px-4 py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
+                  onClick={() => { setActiveTeam("Ice"); if (isFire) setActivePos(pos.matchup); }}
+                  className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
                     !isFire
                       ? "bg-primary text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
@@ -111,123 +111,166 @@ export const ElementalNetball: React.FC = () => {
             transition={{ duration: 0.18 }}
             className="flex-1 overflow-y-auto"
           >
-            {/* ── Matchup Band ── */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`matchup-${activePos}-${activeTeam}`}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="bg-card border-b border-border px-4 py-4 relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 opacity-5 pointer-events-none"
-                  style={{ background: `linear-gradient(135deg, ${activeHex}, transparent 60%)` }}
-                />
-                {/* Position name + tagline centred at top */}
-                <div className="relative text-center mb-2">
-                  <p className="text-[11px] uppercase tracking-widest font-black mb-0.5" style={{ color: activeHex }}>
-                    {pos.code}
-                  </p>
-                  <h2 className="font-black text-lg uppercase tracking-tight text-white leading-tight">
-                    {pos.name}
-                  </h2>
-                  <p className="text-xs italic text-muted-foreground">{pos.tagline}</p>
-                </div>
-
-                {/* Bibs aligned with vs divider */}
-                <div className="relative flex items-center gap-2">
-                  <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                    <div className="w-12 h-[58px]">
+            {/* ── Matchup Band - fixed container, only inner content fades ── */}
+            <div className="bg-card border-b border-border px-4 py-2 relative overflow-hidden">
+              <div
+                className="absolute inset-0 opacity-5 pointer-events-none"
+                style={{ background: `linear-gradient(135deg, ${activeHex}, transparent 60%)` }}
+              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`matchup-${activePos}-${activeTeam}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="relative flex items-center gap-2"
+                >
+                  {/* Left bib */}
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
+                    <div className="w-full aspect-[9/11]">
                       <BibSvg code={leftCode} team={leftTeam} />
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
+                    <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
                       {leftTeam}
                     </span>
                   </div>
 
-                  <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <div className="h-px flex-1 opacity-30" style={{ backgroundColor: activeHex }} />
-                    <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider">vs</span>
-                    <div className="h-px flex-1 opacity-30" style={{ backgroundColor: rightHex }} />
+                  {/* Left position info */}
+                  <div className="flex-1 min-w-0 text-right">
+                    <p className="text-[10px] uppercase tracking-widest font-black leading-none mb-0.5" style={{ color: activeHex }}>
+                      {pos.code}
+                    </p>
+                    <p className="text-sm font-black uppercase tracking-tight text-white leading-tight truncate">
+                      {pos.name}
+                    </p>
+                    <p className="text-[10px] italic text-muted-foreground truncate">{pos.tagline}</p>
                   </div>
 
-                  <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                    <div className="w-12 h-[58px] opacity-80">
+                  {/* VS divider */}
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 px-1">
+                    <div className="h-px w-3 opacity-30" style={{ backgroundColor: activeHex }} />
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">vs</span>
+                    <div className="h-px w-3 opacity-30" style={{ backgroundColor: rightHex }} />
+                  </div>
+
+                  {/* Right position info */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-[10px] uppercase tracking-widest font-black leading-none mb-0.5" style={{ color: rightHex }}>
+                      {opponent.code}
+                    </p>
+                    <p className="text-sm font-black uppercase tracking-tight text-white leading-tight truncate">
+                      {opponent.name}
+                    </p>
+                    <p className="text-[10px] italic text-muted-foreground truncate">{opponent.tagline}</p>
+                  </div>
+
+                  {/* Right bib */}
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
+                    <div className="w-full aspect-[9/11] opacity-80">
                       <BibSvg code={rightCode} team={rightTeam} />
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest font-black" style={{ color: rightHex }}>
+                    <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: rightHex }}>
                       {rightTeam}
                     </span>
                   </div>
-                </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-                {/* Opponent name + tagline centred at bottom */}
-                <div className="relative text-center mt-2">
-                  <p className="text-sm font-bold text-muted-foreground">{opponent.name}</p>
-                  <p className="text-xs italic text-muted-foreground/70">{opponent.tagline}</p>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+            {/* ── Court + both team bibs ── */}
+            {/* Both rows stay in the DOM always. CSS order swaps them; layout animation makes it smooth. */}
+            <div className="px-3 pt-2 pb-1 flex flex-col">
 
-            {/* ── Bib Selector ── */}
-            <div className="bg-background border-b border-border px-3 py-3">
-              <p className="text-[11px] uppercase tracking-widest font-black text-muted-foreground text-center mb-2">
-                {activeTeam} team - tap a position
-              </p>
-              <div className="flex justify-around items-end">
+              {/* Fire bib row: GK->GS (purple->red). Moves to top when Fire is active. */}
+              <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                className="flex items-center pb-1"
+                style={{ order: isFire ? 1 : 3 }}
+              >
                 {[...POSITIONS].reverse().map((p) => {
-                  const isActive = p.code === activePos;
-                  const hex = isFire ? p.fireHex : p.iceHex;
+                  const isActive = p.code === activePos && isFire;
+                  const hex = p.fireHex;
                   return (
                     <motion.button
-                      key={p.code}
-                      onClick={() => setActivePos(p.code)}
+                      key={`fire-${p.code}`}
+                      onClick={() => { setActivePos(p.code); setActiveTeam("Fire"); }}
                       whileTap={{ scale: 0.88 }}
-                      className="flex flex-col items-center gap-1 focus:outline-none"
-                      data-testid={`pos-tab-${p.code}`}
+                      className="flex-1 flex flex-col items-center gap-0.5 focus:outline-none"
+                      data-testid={`pos-fire-${p.code}`}
                     >
                       <motion.div
-                        animate={{ scale: isActive ? 1.2 : 1 }}
+                        animate={{ scale: isActive ? 1.15 : 1 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                        className="w-10 h-12"
-                        style={{
-                          opacity: isActive ? 1 : 0.4,
-                          filter: isActive ? `drop-shadow(0 0 6px ${hex})` : "none",
-                        }}
+                        className="w-4/5 mx-auto aspect-[9/11]"
+                        style={{ opacity: isActive ? 1 : 0.35, filter: isActive ? `drop-shadow(0 0 6px ${hex})` : "none" }}
                       >
-                        <BibSvg code={p.code} team={activeTeam} />
+                        <BibSvg code={p.code} team="Fire" />
                       </motion.div>
-                      <span
-                        className="text-[11px] font-black uppercase tracking-wide transition-all"
-                        style={{ color: isActive ? hex : "transparent" }}
-                      >
+                      <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: isActive ? hex : "transparent" }}>
                         {p.code}
                       </span>
                     </motion.button>
                   );
                 })}
-              </div>
-            </div>
+              </motion.div>
 
-            {/* ── Court Zone Diagram ── */}
-            <CourtZone
-              posCode={activePos}
-              posName={pos.name}
-              zoneCaption={pos.zoneCaption}
-              accentHex={activeHex}
-              team={activeTeam}
-            />
+              {/* Court zone - always in the middle */}
+              <div style={{ order: 2 }}>
+                <CourtZone
+                  posCode={activePos}
+                  posName={pos.name}
+                  zoneCaption={pos.zoneCaption}
+                  accentHex={activeHex}
+                  team={activeTeam}
+                />
+              </div>
+
+              {/* Ice bib row: GS->GK (purple->red). Moves to top when Ice is active. */}
+              <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                className="flex items-center pt-1"
+                style={{ order: isFire ? 3 : 1 }}
+              >
+                {POSITIONS.map((p) => {
+                  const isActive = p.code === activePos && !isFire;
+                  const hex = p.iceHex;
+                  return (
+                    <motion.button
+                      key={`ice-${p.code}`}
+                      onClick={() => { setActivePos(p.code); setActiveTeam("Ice"); }}
+                      whileTap={{ scale: 0.88 }}
+                      className="flex-1 flex flex-col items-center gap-0.5 focus:outline-none"
+                      data-testid={`pos-ice-${p.code}`}
+                    >
+                      <motion.div
+                        animate={{ scale: isActive ? 1.15 : 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className="w-4/5 mx-auto aspect-[9/11]"
+                        style={{ opacity: isActive ? 1 : 0.35, filter: isActive ? `drop-shadow(0 0 6px ${hex})` : "none" }}
+                      >
+                        <BibSvg code={p.code} team="Ice" />
+                      </motion.div>
+                      <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: isActive ? hex : "transparent" }}>
+                        {p.code}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+
+            </div>
 
             {/* ── Position Details ── */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={`details-${activePos}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.22 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
                 className="p-4 space-y-3 pb-8"
               >
                 <section className="bg-card rounded-2xl border border-border p-4">

@@ -1,6 +1,7 @@
-// SpectrumSlider: slim rainbow track with a small rolling ball indicator.
-// Rotation is derived from the ball x position at every frame, giving
-// physically correct rolling with no discrete keyframes.
+// SpectrumSlider: rainbow gradient pill with a netball rolling inside it.
+// The pill is the track. The ball is clipped by the pill's overflow:hidden,
+// so it rolls flush within the coloured bar, matching the designer asset.
+// Rotation is derived from the ball x position at every frame - no keyframes.
 
 import { useEffect, useRef } from "react";
 import { useMotionValue, useTransform, animate, motion } from "framer-motion";
@@ -38,16 +39,17 @@ export const SpectrumSlider: React.FC<SpectrumSliderProps> = ({
   accentHex,
   width = 280,
 }) => {
-  const BAR_H  = 16;           // slim pill track height
-  const BALL_D = 24;           // ball diameter, slightly larger than track
-  const BALL_R = BALL_D / 2;
-  const TRAVEL = width - BALL_D;  // left-edge travel range (0 to TRAVEL)
-  const STEP   = TRAVEL / 6;      // px between each of the 7 stops
+  // Pill height and ball diameter are equal - ball fills the pill exactly
+  const PILL_H  = 28;
+  const BALL_D  = PILL_H;
+  const BALL_R  = BALL_D / 2;
+  const TRAVEL  = width - BALL_D - 2;  // left-edge travel range (2px inset keeps ball inside pill caps)
+  const STEP    = TRAVEL / 6;      // px between each of 7 stops
 
   // x = ball left-edge position (0 to TRAVEL)
   const x = useMotionValue(0);
 
-  // Rotation from x at every frame: angle = (x / radius) * (180 / pi)
+  // Rotation derived from x at every frame: angle = (x / radius) * (180 / pi)
   const rotation = useTransform(
     x,
     (v) => (v / BALL_R) * (180 / Math.PI)
@@ -66,31 +68,19 @@ export const SpectrumSlider: React.FC<SpectrumSliderProps> = ({
   }, [accentHex, STEP, x]);
 
   return (
-    // Wrapper height matches the ball so the thumb has room to overflow the track
+    // The pill IS the container. overflow:hidden clips the ball to the pill shape.
     <div
       style={{
         width,
-        height: BALL_D,
+        height: PILL_H,
+        borderRadius: BALL_R,
+        background: GRADIENT,
         position: "relative",
+        overflow: "hidden",
+        boxShadow: "inset 0 0 14px rgba(10, 10, 10, 0.65)",
         flexShrink: 0,
       }}
     >
-      {/* Slim gradient track, vertically centred */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: "50%",
-          height: BAR_H,
-          transform: "translateY(-50%)",
-          borderRadius: BAR_H / 2,
-          background: GRADIENT,
-          boxShadow: "inset 0 0 10px rgba(10, 10, 10, 0.7)",
-        }}
-      />
-
-      {/* Rolling ball indicator */}
       <motion.div
         style={{
           position: "absolute",
@@ -105,7 +95,7 @@ export const SpectrumSlider: React.FC<SpectrumSliderProps> = ({
         }}
       >
         <img
-          src="/assets/Slider_Ball.png"
+          src="/assets/Slider_Ball_Alt.png"
           alt=""
           aria-hidden
           draggable={false}
