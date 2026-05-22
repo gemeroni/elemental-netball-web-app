@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "elemental-netball",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@workspace/elemental-netball", "dev"],
+      "port": 5173
+    }
+  ]
+}

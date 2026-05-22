@@ -1,69 +1,46 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZONE_SVGS, ICE_ZONE_SVGS, courtLinesRaw } from "@/assets/zoneSvgs";
-
-import redThermRaw    from "@/assets/svg/Red_Thermometer.svg?raw";
-import orangeThermRaw from "@/assets/svg/Orange_Thermometer.svg?raw";
-import yellowThermRaw from "@/assets/svg/Yellow_Thermometer.svg?raw";
-import greenThermRaw  from "@/assets/svg/Green_Thermometer.svg?raw";
-import tealThermRaw   from "@/assets/svg/Teal_Thermometer.svg?raw";
-import blueThermRaw   from "@/assets/svg/Blue_Thermometer.svg?raw";
-import purpleThermRaw from "@/assets/svg/Purple_Thermometer.svg?raw";
-
-// Inline-safe SVG: strip style block, make glass paths white, glow mercury only.
-// Mercury paths are identified by fill-rule="evenodd" (always present as inline
-// attribute on the coloured fill shape). Glass paths have no inline fill and
-// inherit white from the SVG root. The glow filter is scoped to mercury via
-// filter="url(#mg)" so the glass container gets zero glow.
-function processThermSvg(raw: string) {
-  // Glow: blur the source graphic (retains mercury colour), merge 2× blur + original
-  const glowFilter =
-    `<filter id="mg" x="-80%" y="-80%" width="260%" height="260%">` +
-    `<feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="b"/>` +
-    `<feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>` +
-    `</filter>`;
-
-  let svg = raw
-    .replace(/<\?xml[^?]*\?>/g, "")
-    .replace(/<!DOCTYPE[^>]*>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/\s+class="[^"]*"/g, "")
-    .replace(/<svg /, '<svg fill="white" ')
-    .trim();
-
-  // Inject glow filter into existing (now-empty) <defs>, or create one
-  if (svg.includes("<defs>")) {
-    svg = svg.replace("<defs>", `<defs>${glowFilter}`);
-  } else {
-    svg = svg.replace(/(<svg[^>]*>)/, `$1<defs>${glowFilter}</defs>`);
-  }
-
-  // Apply glow filter to mercury paths only — they always carry fill-rule="evenodd"
-  svg = svg.replace(
-    /(<path\b(?=[^>]*fill-rule="evenodd")[^>]*?)(\/?>)/g,
-    '$1 filter="url(#mg)"$2'
-  );
-
-  return svg;
-}
-
-// Map each position accentHex → pre-processed thermometer SVG.
-// The hex values match fireHex/iceHex in positions.ts exactly.
-const HEX_TO_THERM: Record<string, string> = {
-  "#cc3333": processThermSvg(redThermRaw),
-  "#ef6d22": processThermSvg(orangeThermRaw),
-  "#ffaa00": processThermSvg(yellowThermRaw),
-  "#009933": processThermSvg(greenThermRaw),
-  "#009999": processThermSvg(tealThermRaw),
-  "#0052b3": processThermSvg(blueThermRaw),
-  "#663399": processThermSvg(purpleThermRaw),
-};
+import { SpectrumSlider } from "@/components/SpectrumSlider";
 
 // Strip XML/DOCTYPE from the court lines SVG once at module load
 const COURT_LINES = courtLinesRaw
   .replace(/<\?xml[^?]*\?>/g, "")
   .replace(/<!DOCTYPE[^>]*>/gi, "")
   .trim();
+
+// Court SVG native aspect ratio: 356 wide x 709 tall (portrait)
+
+// Landscape geometry (sm breakpoint and above):
+// Rotate the portrait SVG 90 degrees inside a landscape clipping wrapper.
+// COURT_IN_H becomes the landscape rendered width; COURT_IN_W becomes the height.
+const COURT_LS_W  = 310;
+const COURT_IN_H  = COURT_LS_W;
+const COURT_IN_W  = Math.round(COURT_LS_W * (356 / 709));  // ~155
+const COURT_WRAP_W = COURT_IN_H;   // 310 landscape rendered width
+const COURT_WRAP_H = COURT_IN_W;   // ~155 landscape rendered height
+
+// Portrait geometry (mobile):
+// Show the SVG in its natural orientation, no rotation needed.
+const COURT_PT_W = 180;
+const COURT_PT_H = Math.round(COURT_PT_W * (709 / 356));   // ~359
+
+// Slider widths per breakpoint
+const SLIDER_W_MOBILE  = 300;
+const SLIDER_W_DESKTOP = 340;
+
+// Breakpoint hook
+function useIsWide(breakpoint = 640): boolean {
+  const [wide, setWide] = useState(
+    () => typeof window !== "undefined" && window.innerWidth >= breakpoint
+  );
+  useEffect(() => {
+    const handler = () => setWide(window.innerWidth >= breakpoint);
+    window.addEventListener("resize", handler, { passive: true });
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return wide;
+}
 
 interface CourtZoneProps {
   posCode: string;
@@ -80,19 +57,41 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
   accentHex,
   team,
 }) => {
+  const isWide  = useIsWide();
   const zoneSvg = (team === "Ice" ? ICE_ZONE_SVGS : ZONE_SVGS)[posCode] ?? "";
 
-  // Hex → rgba helper for inline styles
-  const hex = accentHex;
-  const glow = `${hex}60`;
+  const hex       = accentHex;
+  const glow      = `${hex}60`;
   const glowFaint = `${hex}18`;
+  const courtShadow = `0 0 0 1px ${hex}20, 0 8px 32px rgba(0,0,0,0.6)`;
+  const sliderW   = isWide ? SLIDER_W_DESKTOP : SLIDER_W_MOBILE;
 
-  // Pick the thermometer matching this position's elemental temperature
-  const thermSvg = HEX_TO_THERM[hex.toLowerCase()] ?? HEX_TO_THERM["#009933"];
+  // Zone fill and court lines layers, shared between portrait and landscape
+  const courtLayers = (
+    <>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`zone-${posCode}-${team}`}
+          className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.22 }}
+          style={{ filter: `drop-shadow(0 0 14px ${glow}) drop-shadow(0 0 30px ${hex}35)` }}
+          dangerouslySetInnerHTML={{ __html: zoneSvg }}
+        />
+      </AnimatePresence>
+
+      <div
+        className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
+        style={{ opacity: 0.75, mixBlendMode: "screen" }}
+        dangerouslySetInnerHTML={{ __html: COURT_LINES }}
+      />
+    </>
+  );
 
   return (
     <div className="px-4 pb-2">
-      {/* ── Outer frame ─────────────────────────────────────────── */}
       <div
         className="rounded-2xl overflow-hidden relative"
         style={{
@@ -101,7 +100,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
           boxShadow: `0 0 48px ${hex}18, 0 2px 0 ${hex}25 inset`,
         }}
       >
-        {/* ── Label row ─────────────────────────────────────────── */}
+        {/* Label row */}
         <div className="flex items-center justify-between px-4 pt-3 pb-0">
           <span className="text-[13px] uppercase tracking-widest font-black text-white/40">
             Zone
@@ -121,64 +120,44 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* ── Court diagram + Thermometer ────────────────────────── */}
-        <div className="flex justify-center items-center px-6 py-4 gap-3">
-          {/* Fixed aspect-ratio court frame */}
-          <div
-            className="relative overflow-hidden flex-shrink-0"
-            style={{
-              aspectRatio: "356 / 709",
-              width: 120,
-              background: "#0c0c12",
-              boxShadow: `0 0 0 1px ${hex}20, 0 8px 32px rgba(0,0,0,0.6)`,
-            }}
-          >
-            {/* ── Layer 1: Zone colour fill + bloom glow ──────────── */}
-            {/* Ice zones are the vertical mirror of Fire zones — scaleY(-1) flips  */}
-            {/* the fill to the correct end without needing separate Ice SVG assets. */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`zone-${posCode}-${team}`}
-                className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
-                style={{
-                  filter: `drop-shadow(0 0 14px ${glow}) drop-shadow(0 0 30px ${hex}35)`,
-                }}
-                dangerouslySetInnerHTML={{ __html: zoneSvg }}
-              />
-            </AnimatePresence>
-
-            {/* ── Layer 2: White court lines overlay ──────────────── */}
+        {/* Court diagram */}
+        <div className="flex justify-center py-4">
+          {isWide ? (
+            // Landscape: portrait SVG rotated 90 degrees inside a clipping wrapper
             <div
-              className="absolute inset-0 pointer-events-none [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
-              style={{ opacity: 0.75, mixBlendMode: "screen" }}
-              dangerouslySetInnerHTML={{ __html: COURT_LINES }}
-            />
-          </div>
-
-          {/* ── Elemental temperature thermometer ───────────────── */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`therm-${posCode}`}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.22 }}
-              className="flex flex-col items-center flex-shrink-0"
+              className="relative overflow-hidden flex-shrink-0"
+              style={{ width: COURT_WRAP_W, height: COURT_WRAP_H, background: "#0c0c12", boxShadow: courtShadow }}
             >
               <div
-                className="[&>svg]:block"
-                style={{ width: 28, height: 87 }}
-                dangerouslySetInnerHTML={{ __html: thermSvg }}
-              />
-            </motion.div>
-          </AnimatePresence>
+                className="absolute"
+                style={{
+                  width: COURT_IN_W,
+                  height: COURT_IN_H,
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%) rotate(90deg)",
+                }}
+              >
+                {courtLayers}
+              </div>
+            </div>
+          ) : (
+            // Portrait: natural SVG orientation on mobile
+            <div
+              className="relative overflow-hidden flex-shrink-0"
+              style={{ width: COURT_PT_W, height: COURT_PT_H, background: "#0c0c12", boxShadow: courtShadow }}
+            >
+              {courtLayers}
+            </div>
+          )}
         </div>
 
-        {/* ── Caption ───────────────────────────────────────────── */}
+        {/* Spectrum slider */}
+        <div className="flex justify-center px-3 pb-4">
+          <SpectrumSlider accentHex={hex} width={sliderW} />
+        </div>
+
+        {/* Caption */}
         <div className="px-5 pb-5">
           <AnimatePresence mode="wait">
             <motion.p

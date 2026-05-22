@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BibSvg } from "./BibSvg";
 import { CourtZone } from "./CourtZone";
 import { InteractiveCourt } from "./InteractiveCourt";
+import { GamesTab } from "./GamesTab";
 import { POSITIONS, getPositionByCode } from "@/data/positions";
 import type { Team } from "@/data/positions";
 
-type Tab = "positions" | "court";
+type Tab = "positions" | "court" | "games";
 
 export const ElementalNetball: React.FC = () => {
   const [tab, setTab] = useState<Tab>("positions");
@@ -42,7 +43,7 @@ export const ElementalNetball: React.FC = () => {
 
           {/* Fire / Ice toggle — only used by Positions tab */}
           <AnimatePresence>
-            {tab === "positions" && (
+            {(tab === "positions") && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -54,7 +55,7 @@ export const ElementalNetball: React.FC = () => {
                   onClick={() => setActiveTeam("Fire")}
                   className={`px-4 py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
                     isFire
-                      ? "bg-[#E53935] text-white"
+                      ? "bg-primary text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
                   }`}
                   data-testid="toggle-fire"
@@ -65,7 +66,7 @@ export const ElementalNetball: React.FC = () => {
                   onClick={() => setActiveTeam("Ice")}
                   className={`px-4 py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
                     !isFire
-                      ? "bg-[#1E88E5] text-white"
+                      ? "bg-primary text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
                   }`}
                   data-testid="toggle-ice"
@@ -79,7 +80,7 @@ export const ElementalNetball: React.FC = () => {
 
         {/* ── Tab bar ── */}
         <div className="flex border-t border-border">
-          {(["positions", "court"] as Tab[]).map((t) => (
+          {(["positions", "court", "games"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -89,7 +90,7 @@ export const ElementalNetball: React.FC = () => {
                   : "text-muted-foreground hover:text-white/70"
               }`}
             >
-              {t === "positions" ? "Positions" : "Court"}
+              {t === "positions" ? "Positions" : t === "court" ? "Court" : "Games"}
               {tab === t && (
                 <motion.div
                   layoutId="tab-underline"
@@ -101,13 +102,12 @@ export const ElementalNetball: React.FC = () => {
         </div>
       </header>
       {/* ── Content ──────────────────────────────────────── */}
-      <AnimatePresence mode="wait">
+      <>
         {tab === "positions" ? (
           <motion.div
             key="positions"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             className="flex-1 overflow-y-auto"
           >
@@ -174,10 +174,10 @@ export const ElementalNetball: React.FC = () => {
             {/* ── Bib Selector ── */}
             <div className="bg-background border-b border-border px-3 py-3">
               <p className="text-[11px] uppercase tracking-widest font-black text-muted-foreground text-center mb-2">
-                {activeTeam} Team — tap a position
+                {activeTeam} team - tap a position
               </p>
               <div className="flex justify-around items-end">
-                {POSITIONS.map((p) => {
+                {[...POSITIONS].reverse().map((p) => {
                   const isActive = p.code === activePos;
                   const hex = isFire ? p.fireHex : p.iceHex;
                   return (
@@ -257,19 +257,28 @@ export const ElementalNetball: React.FC = () => {
               </motion.div>
             </AnimatePresence>
           </motion.div>
-        ) : (
+        ) : tab === "court" ? (
           <motion.div
             key="court"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             className="flex-1 flex flex-col overflow-hidden"
           >
             <InteractiveCourt />
           </motion.div>
+        ) : (
+          <motion.div
+            key="games"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.18 }}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            <GamesTab />
+          </motion.div>
         )}
-      </AnimatePresence>
+      </>
     </div>
   );
 };

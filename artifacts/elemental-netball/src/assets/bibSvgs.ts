@@ -12,8 +12,8 @@ import rawPurpleGKFire   from "./svg/Purple_GK_Fire.svg?raw";
 import rawPurpleGSIce    from "./svg/Purple_GS_Ice.svg?raw";
 import rawRedGKIce       from "./svg/Red_GK_Ice.svg?raw";
 import rawRedGSFire      from "./svg/Red_GS_Fire.svg?raw";
-import rawTealWAIce      from "./svg/Teal_WA_Ice.svg?raw";
-import rawTealWDFire     from "./svg/Teal_WD_Fire.svg?raw";
+import rawAquaWAIce      from "./svg/Aqua_WA_Ice.svg?raw";
+import rawAquaWDFire     from "./svg/Aqua_WD_Fire.svg?raw";
 import rawYellowWAFire   from "./svg/Yellow_WA_Fire.svg?raw";
 import rawYellowWDIce    from "./svg/Yellow_WD_Ice.svg?raw";
 
@@ -61,8 +61,8 @@ const RAW: Record<string, string> = {
   GS_Ice:   rawPurpleGSIce,
   GK_Ice:   rawRedGKIce,
   GS_Fire:  rawRedGSFire,
-  WA_Ice:   rawTealWAIce,
-  WD_Fire:  rawTealWDFire,
+  WA_Ice:   rawAquaWAIce,
+  WD_Fire:  rawAquaWDFire,
   WA_Fire:  rawYellowWAFire,
   WD_Ice:   rawYellowWDIce,
 };

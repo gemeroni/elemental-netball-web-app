@@ -80,7 +80,7 @@ export const PickYourSideSection: React.FC<PickYourSideSectionProps> = ({ onBack
                 }`}
                 data-testid="team-fire"
               >
-                <h3 className="text-2xl font-black text-[#ef6d22] uppercase">Fire Team</h3>
+                <h3 className="text-2xl font-black text-[#FF6600] uppercase">Fire Team</h3>
                 <div className="grid grid-cols-3 gap-2 opacity-80">
                   {POSITIONS.slice(0, 6).map(p => (
                     <div key={p.code} className="w-8 h-10"><BibSvg code={p.code} team="Fire" /></div>
@@ -96,7 +96,7 @@ export const PickYourSideSection: React.FC<PickYourSideSectionProps> = ({ onBack
                 }`}
                 data-testid="team-ice"
               >
-                <h3 className="text-2xl font-black text-[#0052b3] uppercase">Ice Team</h3>
+                <h3 className="text-2xl font-black text-[#2060FF] uppercase">Ice Team</h3>
                 <div className="grid grid-cols-3 gap-2 opacity-80">
                   {POSITIONS.slice(0, 6).map(p => (
                     <div key={p.code} className="w-8 h-10"><BibSvg code={p.code} team="Ice" /></div>

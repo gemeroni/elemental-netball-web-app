@@ -29,8 +29,8 @@ export const BibSvg: React.FC<BibSvgProps> = ({
           width: "100%",
           height: "100%",
           backgroundColor: isFire ? hex : "#ffffff",
-          color: isFire ? "#ffffff" : hex,
-          border: isFire ? "2px solid #b3b3b3" : `4px solid ${hex}`,
+          color: "#1a1a1a",
+          border: isFire ? "none" : `4px solid ${hex}`,
           boxShadow: `inset 0 0 10px rgba(0,0,0,${isFire ? 0.3 : 0.1})`,
         }}
         data-testid={`bib-fallback-${code}-${team}`}

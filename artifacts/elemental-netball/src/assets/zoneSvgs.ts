@@ -9,7 +9,7 @@ import rawRed    from "./svg/Red_Zone.svg?raw";
 import rawOrange from "./svg/Orange_Zone.svg?raw";
 import rawYellow from "./svg/Yellow_Zone.svg?raw";
 import rawGreen  from "./svg/Green_Zone.svg?raw";
-import rawTeal   from "./svg/Teal_Zone.svg?raw";
+import rawAqua   from "./svg/Aqua_Zone.svg?raw";
 import rawBlue   from "./svg/Blue_Zone.svg?raw";
 import rawPurple from "./svg/Purple_Zone.svg?raw";
 
@@ -63,18 +63,18 @@ export const ZONE_SVGS: Record<string, string> = {
   GA: process(rawOrange, "z-ga"),
   WA: process(rawYellow, "z-wa"),
   C:  process(rawGreen,  "z-c"),
-  WD: process(rawTeal,   "z-wd"),
+  WD: process(rawAqua,   "z-wd"),
   GD: process(rawBlue,   "z-gd"),
   GK: process(rawPurple, "z-gk"),
 };
 
 // Ice team: position code → SVG colour matches iceHex (reversed palette)
-// Ice GS=#663399 purple, GA=#0052b3 blue, WA=#009999 teal,
-// C=#009933 green, WD=#ffaa00 yellow, GD=#ef6d22 orange, GK=#cc3333 red
+// Ice GS=#8833EE purple, GA=#2060FF blue, WA=#00C8DC aqua,
+// C=#00C853 green, WD=#FFD800 yellow, GD=#FF6600 orange, GK=#F42040 red
 export const ICE_ZONE_SVGS: Record<string, string> = {
   GS: process(rawPurple, "iz-gs"),
   GA: process(rawBlue,   "iz-ga"),
-  WA: process(rawTeal,   "iz-wa"),
+  WA: process(rawAqua,   "iz-wa"),
   C:  process(rawGreen,  "iz-c"),
   WD: process(rawYellow, "iz-wd"),
   GD: process(rawOrange, "iz-gd"),

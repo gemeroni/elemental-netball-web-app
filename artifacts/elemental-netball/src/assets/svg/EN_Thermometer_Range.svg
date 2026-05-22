@@ -27,13 +27,13 @@
       <rect class="cls-2" width="263.94" height="685.26" fill="none"/>
     </clipPath>
     <linearGradient id="New_Gradient_Swatch_1" data-name="New Gradient Swatch 1" x1="124.46" y1="621.1" x2="124.46" y2="87.8" gradientUnits="userSpaceOnUse">
-      <stop offset=".05" stop-color="#639"/>
-      <stop offset=".2" stop-color="#0052b3"/>
-      <stop offset=".35" stop-color="#099"/>
-      <stop offset=".5" stop-color="#093"/>
-      <stop offset=".65" stop-color="#fa0"/>
-      <stop offset=".8" stop-color="#ef6d22"/>
-      <stop offset=".95" stop-color="#c33"/>
+      <stop offset=".05" stop-color="#8833EE"/>
+      <stop offset=".2" stop-color="#2060FF"/>
+      <stop offset=".35" stop-color="#00C8DC"/>
+      <stop offset=".5" stop-color="#00C853"/>
+      <stop offset=".65" stop-color="#FFD800"/>
+      <stop offset=".8" stop-color="#FF6600"/>
+      <stop offset=".95" stop-color="#F42040"/>
     </linearGradient>
   </defs>
   <g class="cls-3">
