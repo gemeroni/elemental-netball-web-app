@@ -119,11 +119,26 @@ export const ElementalNetball: React.FC = () => {
           >
             {/* ── Matchup Band ── */}
             <div className="bg-card border-b border-border px-4 py-2 relative overflow-hidden">
-              {/* Subtle tint from active position colour */}
+              {/* Team atmosphere gradient - fire rises from below, ice descends from above */}
               <div
-                className="absolute inset-0 opacity-5 pointer-events-none transition-all duration-300"
-                style={{ background: pos ? `linear-gradient(135deg, ${activeHex}, transparent 60%)` : "none" }}
+                className="absolute inset-0 pointer-events-none transition-all duration-500"
+                style={{
+                  background: !pos ? "none" : isFire
+                    ? `linear-gradient(to top, ${activeHex}35 0%, ${activeHex}12 55%, transparent 85%)`
+                    : `linear-gradient(to bottom, ${activeHex}30 0%, ${activeHex}10 55%, transparent 85%)`,
+                }}
               />
+              {/* Glowing accent line - fire at bottom, ice at top */}
+              {pos && (
+                <div
+                  className="absolute left-0 right-0 h-[2px] pointer-events-none transition-all duration-300"
+                  style={{
+                    ...(isFire ? { bottom: 0 } : { top: 0 }),
+                    background: `linear-gradient(to right, transparent 0%, ${activeHex}cc 30%, ${activeHex}cc 70%, transparent 100%)`,
+                    boxShadow: `0 0 8px 1px ${activeHex}60`,
+                  }}
+                />
+              )}
               {/* No-selection prompt - CSS fade, always in DOM */}
               <div
                 className="flex items-center justify-center py-3 transition-opacity duration-150"
@@ -139,7 +154,7 @@ export const ElementalNetball: React.FC = () => {
                   /* ── Selection active: single position featured ── */
                   <div className="relative flex items-center gap-3 py-1">
                     {/* Featured bib - glowing */}
-                    <div className="flex-shrink-0 w-[22%] flex flex-col items-center gap-0.5">
+                    <div className="flex-shrink-0 w-[15%] flex flex-col items-center gap-0.5">
                       <div
                         className="w-full aspect-[9/11]"
                         style={{ filter: `drop-shadow(0 0 10px ${activeHex}cc) drop-shadow(0 0 24px ${activeHex}44)` }}
@@ -153,12 +168,12 @@ export const ElementalNetball: React.FC = () => {
 
                     {/* Position info - full focus */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-black uppercase tracking-tight text-white leading-tight">
+                      <p className="text-[17px] font-black uppercase tracking-tight text-white leading-tight">
                         {pos.name}
                       </p>
-                      <p className="text-[10px] italic text-muted-foreground mt-0.5">{pos.tagline}</p>
+                      <p className="text-[12px] italic text-muted-foreground mt-1">{pos.tagline}</p>
                       {/* Subtle matchup hint */}
-                      <p className="text-[9px] uppercase tracking-[0.15em] text-white/25 mt-2">
+                      <p className="text-[10px] uppercase tracking-[0.15em] text-white/25 mt-2">
                         vs {pos.matchup}
                       </p>
                     </div>
@@ -183,9 +198,9 @@ export const ElementalNetball: React.FC = () => {
                   return (
                     <motion.button
                       key={`fire-${p.code}`}
-                      onClick={() => { setActivePos(p.code); setActiveTeam("Fire"); }}
+                      onClick={() => { if (isActive) setActivePos(null); else { setActivePos(p.code); setActiveTeam("Fire"); } }}
                       whileTap={{ scale: 0.88 }}
-                      className="flex-1 flex flex-col items-center gap-0.5 focus:outline-none"
+                      className="flex-1 flex flex-col items-center focus:outline-none"
                       data-testid={`pos-fire-${p.code}`}
                     >
                       <motion.div
@@ -196,9 +211,6 @@ export const ElementalNetball: React.FC = () => {
                       >
                         <BibSvg code={p.code} team="Fire" />
                       </motion.div>
-                      <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: isActive ? hex : "transparent" }}>
-                        {p.code}
-                      </span>
                     </motion.button>
                   );
                 })}
@@ -236,9 +248,9 @@ export const ElementalNetball: React.FC = () => {
                   return (
                     <motion.button
                       key={`ice-${p.code}`}
-                      onClick={() => { setActivePos(p.code); setActiveTeam("Ice"); }}
+                      onClick={() => { if (isActive) setActivePos(null); else { setActivePos(p.code); setActiveTeam("Ice"); } }}
                       whileTap={{ scale: 0.88 }}
-                      className="flex-1 flex flex-col items-center gap-0.5 focus:outline-none"
+                      className="flex-1 flex flex-col items-center focus:outline-none"
                       data-testid={`pos-ice-${p.code}`}
                     >
                       <motion.div
@@ -249,9 +261,6 @@ export const ElementalNetball: React.FC = () => {
                       >
                         <BibSvg code={p.code} team="Ice" />
                       </motion.div>
-                      <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: isActive ? hex : "transparent" }}>
-                        {p.code}
-                      </span>
                     </motion.button>
                   );
                 })}
