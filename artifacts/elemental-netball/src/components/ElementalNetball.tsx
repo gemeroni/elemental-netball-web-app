@@ -11,20 +11,15 @@ type Tab = "positions" | "court" | "games";
 
 export const ElementalNetball: React.FC = () => {
   const [tab, setTab] = useState<Tab>("positions");
-  const [activePos, setActivePos] = useState("GS");
+  const [activePos, setActivePos] = useState<string | null>(null);
   const [activeTeam, setActiveTeam] = useState<Team>("Fire");
 
-  const pos = getPositionByCode(activePos)!;
-  const opponent = getPositionByCode(pos.matchup)!;
-
   const isFire = activeTeam === "Fire";
-  const activeHex = isFire ? pos.fireHex : pos.iceHex;
-
-  const leftCode = activePos;
-  const leftTeam = activeTeam;
-  const rightCode = pos.matchup;
+  const pos      = activePos ? (getPositionByCode(activePos) ?? null) : null;
+  const opponent = pos       ? (getPositionByCode(pos.matchup) ?? null) : null;
+  const activeHex = pos ? (isFire ? pos.fireHex : pos.iceHex) : "#666666";
   const rightTeam: Team = isFire ? "Ice" : "Fire";
-  const rightHex = isFire ? opponent.iceHex : opponent.fireHex;
+  const rightHex  = opponent ? (isFire ? opponent.iceHex : opponent.fireHex) : "#666666";
 
   return (
     <div
@@ -54,7 +49,7 @@ export const ElementalNetball: React.FC = () => {
                 className="flex w-36 rounded-lg overflow-hidden border border-white/15 flex-shrink-0"
               >
                 <button
-                  onClick={() => { setActiveTeam("Fire"); if (!isFire) setActivePos(pos.matchup); }}
+                  onClick={() => { setActiveTeam("Fire"); if (!isFire && pos) setActivePos(pos.matchup); }}
                   className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
                     isFire
                       ? "bg-primary text-white"
@@ -67,7 +62,7 @@ export const ElementalNetball: React.FC = () => {
                   🔥 Fire
                 </button>
                 <button
-                  onClick={() => { setActiveTeam("Ice"); if (isFire) setActivePos(pos.matchup); }}
+                  onClick={() => { setActiveTeam("Ice"); if (isFire && pos) setActivePos(pos.matchup); }}
                   className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
                     !isFire
                       ? "bg-primary text-white"
@@ -125,65 +120,81 @@ export const ElementalNetball: React.FC = () => {
             aria-labelledby="tab-positions"
             tabIndex={0}
           >
-            {/* ── Matchup Band - fixed container, only inner content fades ── */}
+            {/* ── Matchup Band ── */}
             <div className="bg-card border-b border-border px-4 py-2 relative overflow-hidden">
+              {/* Subtle tint from active position colour */}
               <div
-                className="absolute inset-0 opacity-5 pointer-events-none"
-                style={{ background: `linear-gradient(135deg, ${activeHex}, transparent 60%)` }}
+                className="absolute inset-0 opacity-5 pointer-events-none transition-all duration-300"
+                style={{ background: pos ? `linear-gradient(135deg, ${activeHex}, transparent 60%)` : "none" }}
               />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`matchup-${activePos}-${activeTeam}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="relative flex items-center gap-2"
-                >
-                  {/* Left bib - code shown on bib, no need for text label */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
-                    <div className="w-full aspect-[9/11]">
-                      <BibSvg code={leftCode} team={leftTeam} />
+              {/* No-selection prompt - CSS fade, always in DOM */}
+              <div
+                className="flex items-center justify-center py-3 transition-opacity duration-150"
+                style={{ opacity: pos ? 0 : 1, pointerEvents: pos ? "none" : "auto", display: pos ? "none" : "flex" }}
+                aria-hidden={!!pos}
+              >
+                <p className="text-white/30 text-xs font-black uppercase tracking-[0.2em]">
+                  Pick your player
+                </p>
+              </div>
+
+              {pos && (
+                  /* ── Selection active: active bib prominent, opponent dimmed ── */
+                  <motion.div
+                    key={`matchup-${activePos}-${activeTeam}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="relative flex items-center gap-2"
+                  >
+                    {/* Active bib - glowing, full size */}
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[20%]">
+                      <div
+                        className="w-full aspect-[9/11]"
+                        style={{ filter: `drop-shadow(0 0 8px ${activeHex}cc) drop-shadow(0 0 20px ${activeHex}55)` }}
+                      >
+                        <BibSvg code={activePos!} team={activeTeam} />
+                      </div>
+                      <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
+                        {activeTeam}
+                      </span>
                     </div>
-                    <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
-                      {leftTeam}
-                    </span>
-                  </div>
 
-                  {/* Left position info */}
-                  <div className="flex-1 min-w-0 text-right">
-                    <p className="text-[12px] font-black uppercase tracking-tight text-white leading-tight">
-                      {pos.name}
-                    </p>
-                    <p className="text-[9px] italic text-muted-foreground mt-0.5">{pos.tagline}</p>
-                  </div>
-
-                  {/* VS divider */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 px-2">
-                    <div className="h-px w-4 opacity-25" style={{ backgroundColor: activeHex }} />
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">vs</span>
-                    <div className="h-px w-4 opacity-25" style={{ backgroundColor: rightHex }} />
-                  </div>
-
-                  {/* Right position info */}
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-[12px] font-black uppercase tracking-tight text-white leading-tight">
-                      {opponent.name}
-                    </p>
-                    <p className="text-[9px] italic text-muted-foreground mt-0.5">{opponent.tagline}</p>
-                  </div>
-
-                  {/* Right bib */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
-                    <div className="w-full aspect-[9/11] opacity-85">
-                      <BibSvg code={rightCode} team={rightTeam} />
+                    {/* Active position info - full brightness */}
+                    <div className="flex-1 min-w-0 text-right">
+                      <p className="text-[12px] font-black uppercase tracking-tight text-white leading-tight">
+                        {pos.name}
+                      </p>
+                      <p className="text-[9px] italic text-muted-foreground mt-0.5">{pos.tagline}</p>
                     </div>
-                    <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: rightHex }}>
-                      {rightTeam}
-                    </span>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+
+                    {/* VS divider */}
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 px-2">
+                      <div className="h-px w-4 opacity-25" style={{ backgroundColor: activeHex }} />
+                      <span className="text-[10px] font-black text-white/30 uppercase tracking-wider">vs</span>
+                      <div className="h-px w-4 opacity-25" style={{ backgroundColor: rightHex }} />
+                    </div>
+
+                    {/* Opponent info - dimmed */}
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-[12px] font-black uppercase tracking-tight text-white/40 leading-tight">
+                        {opponent!.name}
+                      </p>
+                      <p className="text-[9px] italic text-muted-foreground/50 mt-0.5">{opponent!.tagline}</p>
+                    </div>
+
+                    {/* Opponent bib - strongly dimmed */}
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[20%]">
+                      <div className="w-full aspect-[9/11] opacity-30">
+                        <BibSvg code={pos.matchup} team={rightTeam} />
+                      </div>
+                      <span className="text-[9px] uppercase tracking-widest font-black text-white/25">
+                        {rightTeam}
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
             </div>
 
             {/* ── Court + both team bibs ── */}
@@ -224,15 +235,23 @@ export const ElementalNetball: React.FC = () => {
                 })}
               </motion.div>
 
-              {/* Court zone - always in the middle */}
+              {/* Court zone - only shown when a position is selected */}
               <div style={{ order: 2 }}>
-                <CourtZone
-                  posCode={activePos}
-                  posName={pos.name}
-                  zoneCaption={pos.zoneCaption}
-                  accentHex={activeHex}
-                  team={activeTeam}
-                />
+                {pos ? (
+                  <CourtZone
+                    posCode={activePos!}
+                    posName={pos.name}
+                    zoneCaption={pos.zoneCaption}
+                    accentHex={activeHex}
+                    team={activeTeam}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center py-6">
+                    <p className="text-white/15 text-[11px] font-semibold uppercase tracking-widest">
+                      Zone map appears here
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Ice bib row: GS->GK (purple->red). Moves to top when Ice is active. */}
@@ -273,41 +292,43 @@ export const ElementalNetball: React.FC = () => {
 
             {/* ── Position Details ── */}
             <div aria-live="polite">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`details-${activePos}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18 }}
-                className="p-4 space-y-3 pb-8"
-              >
-                <section className="bg-card rounded-2xl border border-border p-4">
-                  <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">Role</h3>
-                  <p className="text-base text-foreground leading-relaxed">{pos.role}</p>
-                </section>
+              <AnimatePresence>
+                {pos && (
+                  <motion.div
+                    key={`details-${activePos}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="p-4 space-y-3 pb-8"
+                  >
+                    <section className="bg-card rounded-2xl border border-border p-4">
+                      <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">Role</h3>
+                      <p className="text-base text-foreground leading-relaxed">{pos.role}</p>
+                    </section>
 
-                <section className="bg-card rounded-2xl border border-border p-4">
-                  <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">Note</h3>
-                  <p className="text-base text-foreground leading-relaxed">{pos.note}</p>
-                </section>
+                    <section className="bg-card rounded-2xl border border-border p-4">
+                      <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">Note</h3>
+                      <p className="text-base text-foreground leading-relaxed">{pos.note}</p>
+                    </section>
 
-                <section
-                  className="rounded-2xl border p-4"
-                  style={{
-                    borderColor: `${activeHex}50`,
-                    borderLeftColor: activeHex,
-                    borderLeftWidth: "4px",
-                    backgroundColor: `${activeHex}12`,
-                  }}
-                >
-                  <h3 className="text-xs uppercase tracking-widest font-black mb-2" style={{ color: activeHex }}>
-                    {pos.code === pos.matchup ? "The Centre Battle" : `Matchup - ${pos.code} vs ${pos.matchup}`}
-                  </h3>
-                  <p className="text-base text-foreground leading-relaxed">{pos.matchupDescription}</p>
-                </section>
-              </motion.div>
-            </AnimatePresence>
+                    <section
+                      className="rounded-2xl border p-4"
+                      style={{
+                        borderColor: `${activeHex}50`,
+                        borderLeftColor: activeHex,
+                        borderLeftWidth: "4px",
+                        backgroundColor: `${activeHex}12`,
+                      }}
+                    >
+                      <h3 className="text-xs uppercase tracking-widest font-black mb-2" style={{ color: activeHex }}>
+                        {pos.code === pos.matchup ? "The Centre Battle" : `Matchup - ${pos.code} vs ${pos.matchup}`}
+                      </h3>
+                      <p className="text-base text-foreground leading-relaxed">{pos.matchupDescription}</p>
+                    </section>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         ) : tab === "court" ? (
