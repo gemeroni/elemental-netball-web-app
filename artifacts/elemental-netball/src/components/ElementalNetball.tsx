@@ -139,6 +139,18 @@ export const ElementalNetball: React.FC = () => {
                   }}
                 />
               )}
+              {/* Directional pulse - sweeps toward the team's offensive end */}
+              {pos && (
+                <motion.div
+                  key={`beam-${activeTeam}`}
+                  className="absolute top-0 bottom-0 w-1/3 pointer-events-none"
+                  style={{
+                    background: `linear-gradient(to right, transparent, ${activeHex}22, transparent)`,
+                  }}
+                  animate={{ x: isFire ? [-200, 900] : [900, -200] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeIn", repeatDelay: 0.5 }}
+                />
+              )}
               {/* No-selection prompt - CSS fade, always in DOM */}
               <div
                 className="flex items-center justify-center py-3 transition-opacity duration-150"
