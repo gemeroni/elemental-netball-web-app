@@ -16,10 +16,7 @@ export const ElementalNetball: React.FC = () => {
 
   const isFire = activeTeam === "Fire";
   const pos      = activePos ? (getPositionByCode(activePos) ?? null) : null;
-  const opponent = pos       ? (getPositionByCode(pos.matchup) ?? null) : null;
   const activeHex = pos ? (isFire ? pos.fireHex : pos.iceHex) : "#666666";
-  const rightTeam: Team = isFire ? "Ice" : "Fire";
-  const rightHex  = opponent ? (isFire ? opponent.iceHex : opponent.fireHex) : "#666666";
 
   return (
     <div
@@ -139,20 +136,13 @@ export const ElementalNetball: React.FC = () => {
               </div>
 
               {pos && (
-                  /* ── Selection active: active bib prominent, opponent dimmed ── */
-                  <motion.div
-                    key={`matchup-${activePos}-${activeTeam}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="relative flex items-center gap-2"
-                  >
-                    {/* Active bib - glowing, full size */}
-                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[20%]">
+                  /* ── Selection active: single position featured ── */
+                  <div className="relative flex items-center gap-3 py-1">
+                    {/* Featured bib - glowing */}
+                    <div className="flex-shrink-0 w-[22%] flex flex-col items-center gap-0.5">
                       <div
                         className="w-full aspect-[9/11]"
-                        style={{ filter: `drop-shadow(0 0 8px ${activeHex}cc) drop-shadow(0 0 20px ${activeHex}55)` }}
+                        style={{ filter: `drop-shadow(0 0 10px ${activeHex}cc) drop-shadow(0 0 24px ${activeHex}44)` }}
                       >
                         <BibSvg code={activePos!} team={activeTeam} />
                       </div>
@@ -161,39 +151,18 @@ export const ElementalNetball: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Active position info - full brightness */}
-                    <div className="flex-1 min-w-0 text-right">
-                      <p className="text-[12px] font-black uppercase tracking-tight text-white leading-tight">
+                    {/* Position info - full focus */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[15px] font-black uppercase tracking-tight text-white leading-tight">
                         {pos.name}
                       </p>
-                      <p className="text-[9px] italic text-muted-foreground mt-0.5">{pos.tagline}</p>
-                    </div>
-
-                    {/* VS divider */}
-                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 px-2">
-                      <div className="h-px w-4 opacity-25" style={{ backgroundColor: activeHex }} />
-                      <span className="text-[10px] font-black text-white/30 uppercase tracking-wider">vs</span>
-                      <div className="h-px w-4 opacity-25" style={{ backgroundColor: rightHex }} />
-                    </div>
-
-                    {/* Opponent info - dimmed */}
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-[12px] font-black uppercase tracking-tight text-white/40 leading-tight">
-                        {opponent!.name}
+                      <p className="text-[10px] italic text-muted-foreground mt-0.5">{pos.tagline}</p>
+                      {/* Subtle matchup hint */}
+                      <p className="text-[9px] uppercase tracking-[0.15em] text-white/25 mt-2">
+                        vs {pos.matchup}
                       </p>
-                      <p className="text-[9px] italic text-muted-foreground/50 mt-0.5">{opponent!.tagline}</p>
                     </div>
-
-                    {/* Opponent bib - strongly dimmed */}
-                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[20%]">
-                      <div className="w-full aspect-[9/11] opacity-30">
-                        <BibSvg code={pos.matchup} team={rightTeam} />
-                      </div>
-                      <span className="text-[9px] uppercase tracking-widest font-black text-white/25">
-                        {rightTeam}
-                      </span>
-                    </div>
-                  </motion.div>
+                  </div>
                 )}
             </div>
 

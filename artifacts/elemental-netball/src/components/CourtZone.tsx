@@ -59,7 +59,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
 
   const courtLayers = (
     <>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <motion.div
           key={`zone-${posCode}-${team}`}
           className="absolute inset-0 [&>svg]:w-full [&>svg]:h-full [&>svg]:block"
@@ -96,7 +96,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
         <span className="text-[13px] uppercase tracking-widest font-black text-white/40">
           Zone
         </span>
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.span
             key={posCode}
             initial={{ opacity: 0, x: 6 }}
@@ -147,7 +147,7 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
 
       {/* Caption */}
       <div className="px-5 pb-5">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           <motion.p
             key={`cap-${posCode}`}
             initial={{ opacity: 0 }}

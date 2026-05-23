@@ -75,7 +75,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({ onBack }) =>
 
         {/* Position Details Card */}
         <div className="w-full max-w-sm">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {activePositionInfo && (
               <motion.div
                 key={activePositionInfo.code}

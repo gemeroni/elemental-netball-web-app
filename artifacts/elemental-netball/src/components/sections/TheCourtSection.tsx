@@ -95,7 +95,7 @@ export const TheCourtSection: React.FC<TheCourtSectionProps> = ({ onBack }) => {
         </div>
 
         <div className="w-full max-w-sm min-h-[100px]">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {activeZoneInfo ? (
               <motion.div
                 key={activeZoneInfo.id}

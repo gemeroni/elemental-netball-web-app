@@ -387,7 +387,7 @@ export const InteractiveCourt: React.FC = () => {
         aria-live="polite"
         aria-atomic="true"
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {selectedPos && selectedHex ? (
             <motion.div
               key={`sel-${selected!.code}-${selected!.team}`}
