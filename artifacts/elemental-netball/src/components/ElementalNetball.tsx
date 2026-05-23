@@ -30,15 +30,17 @@ export const ElementalNetball: React.FC = () => {
     <div
       className="h-[100dvh] w-full sm:w-1/2 sm:mx-auto bg-background text-foreground font-sans flex flex-col overflow-hidden"
       data-testid="app-container"
+      role="application"
+      aria-label="Elemental Netball interactive game guide"
     >
       {/* ── Header ───────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-[#111] border-b border-border">
         <div className="flex items-center justify-between px-4 py-3 gap-3">
-          <div className="min-w-0">
-            <h1 className="text-lg font-black uppercase tracking-tight text-white leading-none text-center">
+          <div className="flex-shrink-0">
+            <h1 className="text-[clamp(12px,4.5vw,17px)] font-black uppercase tracking-tight text-white leading-none text-center whitespace-nowrap">
               Elemental <span className="text-primary">Netball</span>
             </h1>
-            <p className="text-muted-foreground uppercase tracking-widest mt-0.5 font-semibold text-[12px] text-center">Interactive Game Basics</p>
+            <p className="text-muted-foreground uppercase tracking-widest mt-0.5 font-semibold text-[10px] text-center">Interactive Game Basics</p>
           </div>
 
           {/* Fire / Ice toggle — only used by Positions tab */}
@@ -53,23 +55,27 @@ export const ElementalNetball: React.FC = () => {
               >
                 <button
                   onClick={() => { setActiveTeam("Fire"); if (!isFire) setActivePos(pos.matchup); }}
-                  className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
+                  className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
                     isFire
                       ? "bg-primary text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
                   }`}
                   data-testid="toggle-fire"
+                  aria-pressed={isFire}
+                  aria-label="Switch to Fire team"
                 >
                   🔥 Fire
                 </button>
                 <button
                   onClick={() => { setActiveTeam("Ice"); if (isFire) setActivePos(pos.matchup); }}
-                  className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
+                  className={`flex-1 py-1.5 text-sm font-black uppercase tracking-wider transition-all duration-200 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
                     !isFire
                       ? "bg-primary text-white"
                       : "bg-transparent text-muted-foreground hover:text-white"
                   }`}
                   data-testid="toggle-ice"
+                  aria-pressed={!isFire}
+                  aria-label="Switch to Ice team"
                 >
                   Ice 🧊
                 </button>
@@ -79,16 +85,20 @@ export const ElementalNetball: React.FC = () => {
         </div>
 
         {/* ── Tab bar ── */}
-        <div className="flex border-t border-border">
+        <div className="flex border-t border-border" role="tablist">
           {(["positions", "court", "games"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest transition-all relative ${
+              className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest transition-all relative focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
                 tab === t
                   ? "text-white"
                   : "text-muted-foreground hover:text-white/70"
               }`}
+              role="tab"
+              aria-selected={tab === t}
+              id={`tab-${t}`}
+              aria-controls={`panel-${t}`}
             >
               {t === "positions" ? "Positions" : t === "court" ? "Court" : "Games"}
               {tab === t && (
@@ -110,6 +120,10 @@ export const ElementalNetball: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.18 }}
             className="flex-1 overflow-y-auto"
+            role="tabpanel"
+            id="panel-positions"
+            aria-labelledby="tab-positions"
+            tabIndex={0}
           >
             {/* ── Matchup Band - fixed container, only inner content fades ── */}
             <div className="bg-card border-b border-border px-4 py-2 relative overflow-hidden">
@@ -127,7 +141,7 @@ export const ElementalNetball: React.FC = () => {
                   className="relative flex items-center gap-2"
                 >
                   {/* Left bib */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[15%]">
                     <div className="w-full aspect-[9/11]">
                       <BibSvg code={leftCode} team={leftTeam} />
                     </div>
@@ -141,10 +155,10 @@ export const ElementalNetball: React.FC = () => {
                     <p className="text-[10px] uppercase tracking-widest font-black leading-none mb-0.5" style={{ color: activeHex }}>
                       {pos.code}
                     </p>
-                    <p className="text-sm font-black uppercase tracking-tight text-white leading-tight truncate">
+                    <p className="text-[11px] font-black uppercase tracking-tight text-white leading-tight">
                       {pos.name}
                     </p>
-                    <p className="text-[10px] italic text-muted-foreground truncate">{pos.tagline}</p>
+                    <p className="text-[9px] italic text-muted-foreground">{pos.tagline}</p>
                   </div>
 
                   {/* VS divider */}
@@ -159,14 +173,14 @@ export const ElementalNetball: React.FC = () => {
                     <p className="text-[10px] uppercase tracking-widest font-black leading-none mb-0.5" style={{ color: rightHex }}>
                       {opponent.code}
                     </p>
-                    <p className="text-sm font-black uppercase tracking-tight text-white leading-tight truncate">
+                    <p className="text-[11px] font-black uppercase tracking-tight text-white leading-tight">
                       {opponent.name}
                     </p>
-                    <p className="text-[10px] italic text-muted-foreground truncate">{opponent.tagline}</p>
+                    <p className="text-[9px] italic text-muted-foreground">{opponent.tagline}</p>
                   </div>
 
                   {/* Right bib */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[15%]">
                     <div className="w-full aspect-[9/11] opacity-80">
                       <BibSvg code={rightCode} team={rightTeam} />
                     </div>
@@ -264,6 +278,7 @@ export const ElementalNetball: React.FC = () => {
             </div>
 
             {/* ── Position Details ── */}
+            <div aria-live="polite">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`details-${activePos}`}
@@ -293,12 +308,13 @@ export const ElementalNetball: React.FC = () => {
                   }}
                 >
                   <h3 className="text-xs uppercase tracking-widest font-black mb-2" style={{ color: activeHex }}>
-                    {pos.code === pos.matchup ? "The Centre Battle" : `Matchup · ${pos.code} vs ${pos.matchup}`}
+                    {pos.code === pos.matchup ? "The Centre Battle" : `Matchup - ${pos.code} vs ${pos.matchup}`}
                   </h3>
                   <p className="text-base text-foreground leading-relaxed">{pos.matchupDescription}</p>
                 </section>
               </motion.div>
             </AnimatePresence>
+            </div>
           </motion.div>
         ) : tab === "court" ? (
           <motion.div
@@ -307,6 +323,10 @@ export const ElementalNetball: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.18 }}
             className="flex-1 flex flex-col overflow-hidden"
+            role="tabpanel"
+            id="panel-court"
+            aria-labelledby="tab-court"
+            tabIndex={0}
           >
             <InteractiveCourt />
           </motion.div>
@@ -317,6 +337,10 @@ export const ElementalNetball: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.18 }}
             className="flex-1 flex flex-col overflow-hidden"
+            role="tabpanel"
+            id="panel-games"
+            aria-labelledby="tab-games"
+            tabIndex={0}
           >
             <GamesTab />
           </motion.div>

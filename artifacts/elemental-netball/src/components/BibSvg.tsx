@@ -33,6 +33,7 @@ export const BibSvg: React.FC<BibSvgProps> = ({
           border: isFire ? "none" : `4px solid ${hex}`,
           boxShadow: `inset 0 0 10px rgba(0,0,0,${isFire ? 0.3 : 0.1})`,
         }}
+        aria-hidden="true"
         data-testid={`bib-fallback-${code}-${team}`}
       >
         {code}
@@ -44,6 +45,7 @@ export const BibSvg: React.FC<BibSvgProps> = ({
     <div
       className={`w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:block ${className}`}
       style={style}
+      aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: svgContent }}
       data-testid={`bib-svg-${code}-${team}`}
     />

@@ -165,6 +165,11 @@ const PlayerToken: React.FC<TokenProps> = ({
       whileDrag={{ scale: 1.2, zIndex: 50 }}
       animate={{ scale: isSelected ? 1.18 : 1 }}
       transition={{ type: "spring", stiffness: 400, damping: 20 }}
+      role="button"
+      tabIndex={0}
+      aria-label={`${team} team ${code}`}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } }}
+      className="focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
       style={{
         x,
         y,
@@ -217,6 +222,8 @@ const BallToken: React.FC<{
       drag
       dragMomentum={false}
       whileDrag={{ scale: 1.3, zIndex: 60 }}
+      role="img"
+      aria-label="Netball ball (draggable)"
       style={{
         x,
         y,
@@ -318,7 +325,7 @@ export const InteractiveCourt: React.FC = () => {
     <div className="flex flex-col h-full select-none">
       {/* ── Header bar ── */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2 flex-shrink-0">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" aria-hidden="true">
           <span className="text-[20px]">🔥</span>
           <div className="text-left">
             <p className="font-black uppercase tracking-wider text-[#E53935] text-[14px]">Fire</p>
@@ -337,6 +344,7 @@ export const InteractiveCourt: React.FC = () => {
               border: showBall ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(255,255,255,0.07)",
             }}
             title={showBall ? "Hide ball" : "Show ball"}
+            aria-label={showBall ? "Hide ball" : "Show ball"}
           >
             {showBall ? (
               /* Eye open */
@@ -358,12 +366,13 @@ export const InteractiveCourt: React.FC = () => {
           <button
             onClick={handleReset}
             className="text-[11px] font-black uppercase tracking-wider bg-white/10 hover:bg-white/20 active:bg-white/30 px-4 py-1.5 rounded-full transition-colors"
+            aria-label="Reset all players to starting positions"
           >
             Reset
           </button>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" aria-hidden="true">
           <div className="text-right">
             <p className="font-black uppercase tracking-wider text-[#1E88E5] text-[14px]">Ice</p>
             <p className="text-[9px] text-white/35 leading-none mt-0.5">attacks ↓</p>
@@ -375,6 +384,8 @@ export const InteractiveCourt: React.FC = () => {
       <div
         className="flex-shrink-0 px-4 py-2 min-h-[54px] flex items-center"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        aria-live="polite"
+        aria-atomic="true"
       >
         <AnimatePresence mode="wait">
           {selectedPos && selectedHex ? (
@@ -428,6 +439,8 @@ export const InteractiveCourt: React.FC = () => {
           <div
             ref={courtRef}
             className="relative overflow-hidden flex-shrink-0"
+            role="region"
+            aria-label="Interactive netball court"
             style={{
               width:  courtSize.w || undefined,
               height: courtSize.h || undefined,
