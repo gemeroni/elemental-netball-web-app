@@ -28,7 +28,7 @@ export const ElementalNetball: React.FC = () => {
 
   return (
     <div
-      className="min-h-[100dvh] w-full sm:w-1/2 sm:mx-auto bg-background text-foreground font-sans flex flex-col"
+      className="h-[100dvh] w-full sm:w-1/2 sm:mx-auto bg-background text-foreground font-sans flex flex-col overflow-hidden"
       data-testid="app-container"
     >
       {/* ── Header ───────────────────────────────────────── */}

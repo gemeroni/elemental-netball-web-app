@@ -44,25 +44,29 @@ const ICE_ZONES: Record<string, ZoneRect> = Object.fromEntries(
 );
 
 // ── Centre-pass starting positions ───────────────────────────────────────────
-// Fire C has the ball at the centre circle; pairs show attacker + marker side by side.
+// Each position is paired side by side with its opponent:
+//   goal-third pairs    x = [0.38, 0.54]
+//   flank-left pairs    x = [0.17, 0.27]
+//   flank-right pairs   x = [0.72, 0.82]
+//   centre pair         x = [0.40, 0.52]
 const FIRE_INIT: Record<string, [number, number]> = {
-  GS: [0.38, 0.17],  // Fire goal third — left
-  GA: [0.20, 0.37],  // left at upper transverse line
-  WA: [0.72, 0.34],  // right at upper transverse line
-  C:  [0.42, 0.50],  // center circle, taking the pass
-  WD: [0.28, 0.62],  // left at lower transverse line
-  GD: [0.62, 0.64],  // right at lower transverse line
-  GK: [0.38, 0.83],  // Ice goal third — left
+  GS: [0.38, 0.17],  // top goal third, left of pair (Fire attacks up)
+  GA: [0.17, 0.36],  // upper transverse, left flank - left token
+  WA: [0.82, 0.35],  // upper transverse, right flank - right token
+  C:  [0.40, 0.49],  // centre circle, taking the pass
+  WD: [0.17, 0.65],  // lower transverse, left flank - left token
+  GD: [0.72, 0.65],  // lower transverse, right flank - left token
+  GK: [0.38, 0.83],  // bottom goal third, left of pair
 };
 
 const ICE_INIT: Record<string, [number, number]> = {
-  GS: [0.57, 0.83],  // Ice goal third — right
-  GA: [0.76, 0.64],  // right at lower transverse (opposing GD)
-  WA: [0.18, 0.62],  // left at lower transverse (opposing WD)
-  C:  [0.60, 0.52],  // just outside center (waiting during Fire's pass)
-  WD: [0.62, 0.34],  // right at upper transverse (opposing WA)
-  GD: [0.30, 0.37],  // left at upper transverse (opposing GA)
-  GK: [0.53, 0.17],  // Fire goal third — right (marking GS)
+  GS: [0.54, 0.83],  // bottom goal third, right of pair (Ice attacks down)
+  GA: [0.82, 0.65],  // lower transverse, right flank - right token
+  WA: [0.27, 0.65],  // lower transverse, left flank - right token
+  C:  [0.52, 0.52],  // just past centre, waiting during Fire's pass
+  WD: [0.72, 0.35],  // upper transverse, right flank - left token
+  GD: [0.27, 0.36],  // upper transverse, left flank - right token
+  GK: [0.54, 0.17],  // top goal third, right of pair (marking Fire GS)
 };
 
 // ── Heatmap colour stops ──────────────────────────────────────────────────────
@@ -252,8 +256,12 @@ const BallToken: React.FC<{
 // ── Selected state ────────────────────────────────────────────────────────────
 interface Selected { code: string; team: Team }
 
+// Court SVG aspect ratio: portrait 1356 wide x 2600 tall
+const COURT_AR = 1356 / 2600;
+
 // ── Main component ────────────────────────────────────────────────────────────
 export const InteractiveCourt: React.FC = () => {
+  const areaRef  = useRef<HTMLDivElement>(null);
   const courtRef = useRef<HTMLDivElement>(null);
   const [courtSize, setCourtSize] = useState({ w: 0, h: 0 });
   const [resetKey, setResetKey] = useState(0);
@@ -261,11 +269,24 @@ export const InteractiveCourt: React.FC = () => {
   const [showBall, setShowBall] = useState(true);
 
   useEffect(() => {
-    const el = courtRef.current;
+    const el = areaRef.current;
     if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      setCourtSize({ w: width, h: height });
+    const ro = new ResizeObserver(([entry]) => {
+      const { width: aw, height: ah } = entry.contentRect;
+      // Fit court within available area without cropping.
+      // Try full-width first; if that makes it too tall, use full-height instead.
+      let cw: number, ch: number;
+      if (aw / COURT_AR <= ah) {
+        cw = aw;
+        ch = aw / COURT_AR;
+      } else {
+        ch = ah;
+        cw = ah * COURT_AR;
+      }
+      // Hard cap so it never gets absurdly wide on desktop
+      const MAX_W = 480;
+      if (cw > MAX_W) { cw = MAX_W; ch = cw / COURT_AR; }
+      setCourtSize({ w: Math.round(cw), h: Math.round(ch) });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -401,15 +422,15 @@ export const InteractiveCourt: React.FC = () => {
         </AnimatePresence>
       </div>
       {/* ── Court ── */}
-      {/* Width-driven: fixed width, height via aspect-ratio, capped by maxHeight */}
-      <div className="flex-1 flex items-center justify-center px-1 overflow-hidden py-0">
+      {/* areaRef fills remaining flex space; ResizeObserver computes the largest
+          court that fits within it without cropping, then sets explicit w/h. */}
+      <div ref={areaRef} className="flex-1 flex items-center justify-center overflow-hidden p-1">
           <div
             ref={courtRef}
             className="relative overflow-hidden flex-shrink-0"
             style={{
-              aspectRatio: "1356 / 2600",
-              width: "min(460px, calc(100vw - 8px))",
-              maxHeight: "calc(100dvh - 220px)",
+              width:  courtSize.w || undefined,
+              height: courtSize.h || undefined,
               background: "#0b0b10",
               boxShadow: "0 0 0 1px rgba(255,255,255,0.07), 0 12px 48px rgba(0,0,0,0.8)",
               borderRadius: 4,
