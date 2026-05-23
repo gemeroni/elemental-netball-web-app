@@ -140,8 +140,8 @@ export const ElementalNetball: React.FC = () => {
                   transition={{ duration: 0.15 }}
                   className="relative flex items-center gap-2"
                 >
-                  {/* Left bib */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[15%]">
+                  {/* Left bib - code shown on bib, no need for text label */}
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
                     <div className="w-full aspect-[9/11]">
                       <BibSvg code={leftCode} team={leftTeam} />
                     </div>
@@ -152,36 +152,30 @@ export const ElementalNetball: React.FC = () => {
 
                   {/* Left position info */}
                   <div className="flex-1 min-w-0 text-right">
-                    <p className="text-[10px] uppercase tracking-widest font-black leading-none mb-0.5" style={{ color: activeHex }}>
-                      {pos.code}
-                    </p>
-                    <p className="text-[11px] font-black uppercase tracking-tight text-white leading-tight">
+                    <p className="text-[12px] font-black uppercase tracking-tight text-white leading-tight">
                       {pos.name}
                     </p>
-                    <p className="text-[9px] italic text-muted-foreground">{pos.tagline}</p>
+                    <p className="text-[9px] italic text-muted-foreground mt-0.5">{pos.tagline}</p>
                   </div>
 
                   {/* VS divider */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 px-1">
-                    <div className="h-px w-3 opacity-30" style={{ backgroundColor: activeHex }} />
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 px-2">
+                    <div className="h-px w-4 opacity-25" style={{ backgroundColor: activeHex }} />
                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">vs</span>
-                    <div className="h-px w-3 opacity-30" style={{ backgroundColor: rightHex }} />
+                    <div className="h-px w-4 opacity-25" style={{ backgroundColor: rightHex }} />
                   </div>
 
                   {/* Right position info */}
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-[10px] uppercase tracking-widest font-black leading-none mb-0.5" style={{ color: rightHex }}>
-                      {opponent.code}
-                    </p>
-                    <p className="text-[11px] font-black uppercase tracking-tight text-white leading-tight">
+                    <p className="text-[12px] font-black uppercase tracking-tight text-white leading-tight">
                       {opponent.name}
                     </p>
-                    <p className="text-[9px] italic text-muted-foreground">{opponent.tagline}</p>
+                    <p className="text-[9px] italic text-muted-foreground mt-0.5">{opponent.tagline}</p>
                   </div>
 
                   {/* Right bib */}
-                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[15%]">
-                    <div className="w-full aspect-[9/11] opacity-80">
+                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-[18%]">
+                    <div className="w-full aspect-[9/11] opacity-85">
                       <BibSvg code={rightCode} team={rightTeam} />
                     </div>
                     <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: rightHex }}>
