@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm --filter @workspace/elemental-netball build",
   "outputDirectory": "artifacts/elemental-netball/dist/public",
-  "installCommand": "pnpm install",
+  "installCommand": "corepack enable && corepack prepare pnpm@11.1.2 --activate && pnpm install",
   "framework": null
 }

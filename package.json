@@ -10,7 +10,7 @@
   "private": true,
   "packageManager": "pnpm@11.1.2",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   },
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild", "@rollup/rollup-win32-x64-msvc"]
