@@ -153,26 +153,23 @@ export const ElementalNetball: React.FC = () => {
               {pos && (
                   /* ── Selection active: single position featured ── */
                   <div className="relative flex items-center gap-3 py-1">
-                    {/* Featured bib - glowing */}
-                    <div className="flex-shrink-0 w-[15%] flex flex-col items-center gap-0.5">
-                      <div
-                        className="w-full aspect-[9/11]"
-                        style={{ filter: `drop-shadow(0 0 10px ${activeHex}cc) drop-shadow(0 0 24px ${activeHex}44)` }}
-                      >
-                        <BibSvg code={activePos!} team={activeTeam} />
-                      </div>
-                      <span className="text-[9px] uppercase tracking-widest font-black" style={{ color: activeHex }}>
-                        {activeTeam}
-                      </span>
+                    {/* Featured bib - fixed small accent */}
+                    <div
+                      className="flex-shrink-0 w-10 aspect-[9/11]"
+                      style={{ filter: `drop-shadow(0 0 8px ${activeHex}cc) drop-shadow(0 0 18px ${activeHex}44)` }}
+                    >
+                      <BibSvg code={activePos!} team={activeTeam} />
                     </div>
 
-                    {/* Position info - full focus */}
+                    {/* Position info - dominant */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[17px] font-black uppercase tracking-tight text-white leading-tight">
+                      <p className="text-[9px] uppercase tracking-widest font-black mb-0.5" style={{ color: activeHex }}>
+                        {activeTeam}
+                      </p>
+                      <p className="text-[18px] font-black uppercase tracking-tight text-white leading-none">
                         {pos.name}
                       </p>
                       <p className="text-[12px] italic text-muted-foreground mt-1">{pos.tagline}</p>
-                      {/* Subtle matchup hint */}
                       <p className="text-[10px] uppercase tracking-[0.15em] text-white/25 mt-2">
                         vs {pos.matchup}
                       </p>
