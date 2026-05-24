@@ -13,6 +13,7 @@ export const ElementalNetball: React.FC = () => {
   const [tab, setTab] = useState<Tab>("positions");
   const [activePos, setActivePos] = useState<string | null>(null);
   const [activeTeam, setActiveTeam] = useState<Team>("Fire");
+  const [greyscale, setGreyscale] = useState<boolean>(false);
 
   const isFire = activeTeam === "Fire";
   const pos      = activePos ? (getPositionByCode(activePos) ?? null) : null;
@@ -34,6 +35,28 @@ export const ElementalNetball: React.FC = () => {
             </h1>
             <p className="text-muted-foreground uppercase tracking-widest mt-0.5 font-semibold text-[10px] text-center">Interactive Game Basics</p>
           </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+
+          {/* Greyscale toggle — visible on all tabs, for colour-matching efficacy checks */}
+          <button
+            onClick={() => setGreyscale((g) => !g)}
+            className={`flex items-center justify-center w-8 h-8 rounded-md border transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
+              greyscale
+                ? "bg-white text-black border-white"
+                : "bg-transparent text-muted-foreground border-white/15 hover:text-white hover:border-white/40"
+            }`}
+            data-testid="toggle-greyscale"
+            aria-pressed={greyscale}
+            aria-label={greyscale ? "Switch to colour view" : "Switch to greyscale view"}
+            title={greyscale ? "Colour view" : "Greyscale view"}
+          >
+            {/* simple half-filled circle glyph */}
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" />
+            </svg>
+          </button>
 
           {/* Fire / Ice toggle — only used by Positions tab */}
           <AnimatePresence>
@@ -74,6 +97,7 @@ export const ElementalNetball: React.FC = () => {
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </div>
 
         {/* ── Tab bar ── */}
@@ -104,6 +128,10 @@ export const ElementalNetball: React.FC = () => {
         </div>
       </header>
       {/* ── Content ──────────────────────────────────────── */}
+      <div
+        className="flex-1 flex flex-col overflow-hidden"
+        style={{ filter: greyscale ? "grayscale(1)" : "none" }}
+      >
       <>
         {tab === "positions" ? (
           <motion.div
@@ -348,6 +376,7 @@ export const ElementalNetball: React.FC = () => {
           </motion.div>
         )}
       </>
+      </div>
     </div>
   );
 };
