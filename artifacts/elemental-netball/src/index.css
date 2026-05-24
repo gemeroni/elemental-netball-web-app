@@ -121,7 +121,7 @@
   --chart-4: 35 100% 50%;
   --chart-5: 270 50% 40%;
 
-  --app-font-sans: 'forma-djr-deck', sans-serif;
+  --app-font-sans: 'Nunito Sans', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.75rem;
@@ -142,6 +142,5 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-weight: 500;
   }
 }
