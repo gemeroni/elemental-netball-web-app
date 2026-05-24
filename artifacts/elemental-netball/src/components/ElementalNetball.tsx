@@ -40,7 +40,7 @@ export const ElementalNetball: React.FC = () => {
 
           {/* Figma link — quick jump to the source-of-truth design file */}
           <a
-            href="https://www.figma.com/design/8IrDxLkc9QGHr3hqlql11p/Elemental-Netball-Web-App?node-id=19-2"
+            href="https://www.figma.com/design/8IrDxLkc9QGHr3hqlql11p/Elemental-Netball-Web-App?node-id=1-2&m=dev"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center w-8 h-8 rounded-md border border-white/15 text-muted-foreground hover:text-white hover:border-white/40 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
