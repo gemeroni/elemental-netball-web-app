@@ -38,6 +38,22 @@ export const ElementalNetball: React.FC = () => {
 
           <div className="flex items-center gap-2 flex-shrink-0">
 
+          {/* Figma link — quick jump to the source-of-truth design file */}
+          <a
+            href="https://www.figma.com/design/8IrDxLkc9QGHr3hqlql11p/Elemental-Netball-Web-App?node-id=1-2"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-8 h-8 rounded-md border border-white/15 text-muted-foreground hover:text-white hover:border-white/40 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+            aria-label="Open Figma design file in new tab"
+            title="Open in Figma"
+            data-testid="link-figma"
+          >
+            {/* Figma logo glyph - simplified three-circle mark */}
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor">
+              <path d="M8.5 2a3.5 3.5 0 0 0 0 7H12V2H8.5zm0 8a3.5 3.5 0 0 0 0 7H12v-7H8.5zm0 8a3.5 3.5 0 1 0 3.5 3.5V18H8.5zM13 2v7h2.5a3.5 3.5 0 1 0 0-7H13zm0 8v7h2.5a3.5 3.5 0 1 0 0-7H13z" />
+            </svg>
+          </a>
+
           {/* Greyscale toggle — visible on all tabs, for colour-matching efficacy checks */}
           <button
             onClick={() => setGreyscale((g) => !g)}
