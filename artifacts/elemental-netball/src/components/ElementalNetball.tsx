@@ -13,7 +13,7 @@ export const ElementalNetball: React.FC = () => {
   const [tab, setTab] = useState<Tab>("positions");
   const [activePos, setActivePos] = useState<string | null>(null);
   const [activeTeam, setActiveTeam] = useState<Team>("Fire");
-  const [greyscale, setGreyscale] = useState<boolean>(false);
+  const [neutraliseBibs, setNeutraliseBibs] = useState<boolean>(false);
 
   const isFire = activeTeam === "Fire";
   const pos      = activePos ? (getPositionByCode(activePos) ?? null) : null;
@@ -54,23 +54,24 @@ export const ElementalNetball: React.FC = () => {
             </svg>
           </a>
 
-          {/* Greyscale toggle — visible on all tabs, for colour-matching efficacy checks */}
+          {/* Neutralise-bibs toggle - strips the colour from bibs only,
+              so parents can test how much the position-colour cue is doing. */}
           <button
-            onClick={() => setGreyscale((g) => !g)}
+            onClick={() => setNeutraliseBibs((n) => !n)}
             className={`flex items-center justify-center w-8 h-8 rounded-md border transition-all duration-150 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
-              greyscale
+              neutraliseBibs
                 ? "bg-white text-black border-white"
                 : "bg-transparent text-muted-foreground border-white/15 hover:text-white hover:border-white/40"
             }`}
-            data-testid="toggle-greyscale"
-            aria-pressed={greyscale}
-            aria-label={greyscale ? "Switch to colour view" : "Switch to greyscale view"}
-            title={greyscale ? "Colour view" : "Greyscale view"}
+            data-testid="toggle-neutralise-bibs"
+            aria-pressed={neutraliseBibs}
+            aria-label={neutraliseBibs ? "Restore bib colour" : "Neutralise bib colour"}
+            title={neutraliseBibs ? "Restore bib colour" : "Neutralise bib colour"}
           >
-            {/* simple half-filled circle glyph */}
+            {/* bib glyph with a diagonal slash to signal colour-off */}
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 3 a9 9 0 0 1 0 18 z" fill="currentColor" />
+              <rect x="5" y="4" width="14" height="16" rx="3" ry="3" fill="none" stroke="currentColor" strokeWidth="2" />
+              <line x1="4" y1="20" x2="20" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
 
@@ -144,10 +145,6 @@ export const ElementalNetball: React.FC = () => {
         </div>
       </header>
       {/* ── Content ──────────────────────────────────────── */}
-      <div
-        className="flex-1 flex flex-col overflow-hidden"
-        style={{ filter: greyscale ? "grayscale(1)" : "none" }}
-      >
       <>
         {tab === "positions" ? (
           <motion.div
@@ -214,7 +211,7 @@ export const ElementalNetball: React.FC = () => {
                       className="flex-shrink-0 w-10 aspect-[9/11]"
                       style={{ filter: `drop-shadow(0 0 8px ${activeHex}cc) drop-shadow(0 0 18px ${activeHex}44)` }}
                     >
-                      <BibSvg code={activePos!} team={activeTeam} />
+                      <BibSvg code={activePos!} team={activeTeam} monochrome={neutraliseBibs} />
                     </div>
 
                     {/* Position info - dominant */}
@@ -262,7 +259,7 @@ export const ElementalNetball: React.FC = () => {
                         className="w-4/5 mx-auto aspect-[9/11]"
                         style={{ opacity: isActive ? 1 : 0.35, filter: isActive ? `drop-shadow(0 0 6px ${hex})` : "none" }}
                       >
-                        <BibSvg code={p.code} team="Fire" />
+                        <BibSvg code={p.code} team="Fire" monochrome={neutraliseBibs} />
                       </motion.div>
                     </motion.button>
                   );
@@ -312,7 +309,7 @@ export const ElementalNetball: React.FC = () => {
                         className="w-4/5 mx-auto aspect-[9/11]"
                         style={{ opacity: isActive ? 1 : 0.35, filter: isActive ? `drop-shadow(0 0 6px ${hex})` : "none" }}
                       >
-                        <BibSvg code={p.code} team="Ice" />
+                        <BibSvg code={p.code} team="Ice" monochrome={neutraliseBibs} />
                       </motion.div>
                     </motion.button>
                   );
@@ -392,7 +389,6 @@ export const ElementalNetball: React.FC = () => {
           </motion.div>
         )}
       </>
-      </div>
     </div>
   );
 };

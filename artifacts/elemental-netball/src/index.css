@@ -144,3 +144,18 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Bib colour neutraliser - toggled from the app header.
+   The coloured part of each bib SVG is scoped to a per-file class
+   like `cls-1-<prefix>`. Overriding with [class*="cls-1-"] wins
+   against the SVG's own inline <style> when paired with !important. */
+[data-neutralise-bibs="true"] [data-testid^="bib-svg-"] svg [class*="cls-1-"] {
+  fill: #333 !important;
+}
+
+/* Fallback bib (used when an SVG asset is missing) - same treatment. */
+[data-neutralise-bibs="true"] [data-testid^="bib-fallback-"] {
+  background-color: #333 !important;
+  border-color: #333 !important;
+  color: #f2f2f2 !important;
+}
