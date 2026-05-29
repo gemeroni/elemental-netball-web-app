@@ -61,10 +61,10 @@ export const POSITIONS: Position[] = [
     fireColorName: "Yellow",
     iceColorName: "Aqua",
     tagline: "set the attack up",
-    role: "WA drives the ball into the attacking half and delivers it to GS and GA. You win the centre pass at the start of each quarter. You cannot enter the shooting circle - your job is to put your shooters in the best position to score.",
+    role: "WA drives the ball into the attacking half and delivers it to GS and GA. When play restarts, get free in the centre third so the Centre can pass to you. You cannot enter the shooting circle - your job is to put your shooters in the best position to score.",
     zones: "Centre third and attacking goal third, NOT the shooting circle.",
     zoneCaption: "Centre third and attacking goal third. WA cannot enter the shooting circle.",
-    note: "WA cannot shoot for goal. Win the centre pass, keep the ball moving forward, and set GA and GS up to score.",
+    note: "WA cannot shoot for goal. Get free to receive the centre pass, keep the ball moving forward, and set GA and GS up to score.",
     matchup: "WD",
     matchupDescription:
       "WA needs a clean first touch at the centre pass. WD will try to deny it. Drive hard, change direction early, and get to the ball first.",

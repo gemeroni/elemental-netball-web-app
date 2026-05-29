@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BibSvg } from "@/components/BibSvg";
+import { ReadAloud } from "@/components/ReadAloud";
 import {
   CENTRE_PASS_STEPS,
   getStepHex,
@@ -98,6 +99,7 @@ export const CentrePassGame: React.FC<CentrePassGameProps> = ({ onBack }) => {
         if (timerRef.current) clearInterval(timerRef.current);
       };
     }
+    return undefined;
   }, [timerEnabled, phase]);
 
   const stopTimer = useCallback(() => {
@@ -334,12 +336,21 @@ export const CentrePassGame: React.FC<CentrePassGameProps> = ({ onBack }) => {
                   <BibSvg code={currentStep.code} team={team} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p
-                    className="text-[11px] font-black uppercase tracking-widest leading-none"
-                    style={{ color: accentHex }}
-                  >
-                    {currentStep.code} · {currentStep.name}
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p
+                      className="text-[11px] font-black uppercase tracking-widest leading-none"
+                      style={{ color: accentHex }}
+                    >
+                      {currentStep.code} · {currentStep.name}
+                    </p>
+                    {/* Read the instruction for this step aloud. */}
+                    <ReadAloud
+                      size={13}
+                      className="h-7 w-7"
+                      label={`Read the ${currentStep.name} instruction aloud`}
+                      text={getStepPrompt(currentStep, team)}
+                    />
+                  </div>
                   <p className="text-xs text-white/70 leading-snug mt-1">
                     {getStepPrompt(currentStep, team)}
                   </p>

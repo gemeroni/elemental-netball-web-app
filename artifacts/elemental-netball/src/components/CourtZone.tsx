@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZONE_SVGS, ICE_ZONE_SVGS, courtLinesRaw } from "@/assets/zoneSvgs";
 import { SpectrumSlider } from "@/components/SpectrumSlider";
+import { ReadAloud } from "@/components/ReadAloud";
 
 // Strip XML/DOCTYPE from the court lines SVG once at module load
 const COURT_LINES = courtLinesRaw
@@ -93,9 +94,18 @@ export const CourtZone: React.FC<CourtZoneProps> = ({
     >
       {/* Label row */}
       <div className="flex items-center justify-between px-4 pt-3 pb-0">
-        <span className="text-[13px] uppercase tracking-widest font-black text-white/40">
-          Zone
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] uppercase tracking-widest font-black text-white/40">
+            Zone
+          </span>
+          {/* Speak the zone description for non-readers. */}
+          <ReadAloud
+            size={13}
+            className="h-7 w-7"
+            label="Read the zone description aloud"
+            text={`${posName}. ${zoneCaption}`}
+          />
+        </div>
         <AnimatePresence>
           <motion.span
             key={posCode}

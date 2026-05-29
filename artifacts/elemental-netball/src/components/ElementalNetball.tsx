@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { BibSvg } from "./BibSvg";
 import { CourtZone } from "./CourtZone";
 import { InteractiveCourt } from "./InteractiveCourt";
 import { GamesTab } from "./GamesTab";
+import { ReadAloud } from "./ReadAloud";
 import { POSITIONS, getPositionByCode } from "@/data/positions";
 import type { Team } from "@/data/positions";
 
@@ -14,6 +15,10 @@ export const ElementalNetball: React.FC = () => {
   const [activePos, setActivePos] = useState<string | null>(null);
   const [activeTeam, setActiveTeam] = useState<Team>("Fire");
   const [neutraliseBibs, setNeutraliseBibs] = useState<boolean>(false);
+
+  // True when the device has "reduce motion" turned on. Used to skip the
+  // looping decorative animation, which can overwhelm sensory-sensitive users.
+  const shouldReduceMotion = useReducedMotion();
 
   const isFire = activeTeam === "Fire";
   const pos      = activePos ? (getPositionByCode(activePos) ?? null) : null;
@@ -180,8 +185,9 @@ export const ElementalNetball: React.FC = () => {
                   }}
                 />
               )}
-              {/* Directional pulse - sweeps toward the team's offensive end */}
-              {pos && (
+              {/* Directional pulse - sweeps toward the team's offensive end.
+                  Skipped entirely when the user prefers reduced motion. */}
+              {pos && !shouldReduceMotion && (
                 <motion.div
                   key={`beam-${activeTeam}`}
                   className="absolute top-0 bottom-0 w-1/3 pointer-events-none"
@@ -331,7 +337,15 @@ export const ElementalNetball: React.FC = () => {
                     className="p-4 space-y-3 pb-8"
                   >
                     <section className="bg-card rounded-2xl border border-border p-4">
-                      <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-2">Role</h3>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <h3 className="text-xs uppercase tracking-widest font-black text-muted-foreground">Role</h3>
+                        {/* Reads the whole position — role, note and matchup —
+                            so non-readers aren't shut out of this content. */}
+                        <ReadAloud
+                          label={`Read ${pos.name} aloud`}
+                          text={`${pos.name}. ${pos.tagline}. ${pos.role} ${pos.note} ${pos.matchupDescription}`}
+                        />
+                      </div>
                       <p className="text-base text-foreground leading-relaxed">{pos.role}</p>
                     </section>
 

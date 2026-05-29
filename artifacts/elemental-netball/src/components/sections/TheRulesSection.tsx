@@ -51,7 +51,7 @@ const RULES: RuleScenario[] = [
     description: "A defender accidentally bumps into the shooter. What happens?",
     answers: ["Play on — it was an accident", "Penalty pass to the attacking team", "The player is sent off"],
     correctIndex: 1,
-    explanation: "Any physical contact is penalised in netball, even if it was accidental."
+    explanation: "Contact that gets in another player's way is penalised in netball, even if it was accidental."
   }
 ];
 
